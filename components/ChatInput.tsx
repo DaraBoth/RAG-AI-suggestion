@@ -294,7 +294,7 @@ export default function ChatInput() {
 
   return (
     <div className="space-y-6">
-      <Card className="border-white/10 bg-white/5 backdrop-blur-xl relative z-10 overflow-hidden">
+      <Card className="border-white/10 bg-white/5 backdrop-blur-xl relative z-10">
         <BorderBeam size={300} duration={18} delay={0} />
         <CardContent className="p-6">
           <div className="space-y-4">
@@ -332,7 +332,7 @@ export default function ChatInput() {
             </div>
 
             {/* Search Bar Style Input with Dropdown Suggestions */}
-            <div className="relative">
+            <div className="relative overflow-visible z-10">
               {/* Input Textarea */}
               <textarea
                 ref={textareaRef}
