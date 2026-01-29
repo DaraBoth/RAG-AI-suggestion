@@ -113,7 +113,7 @@ export async function POST(request: NextRequest) {
               characters: chunk.length,
               uploaded_at: new Date().toISOString(),
             },
-          })
+          } as any)
           .select()
           .single()
 

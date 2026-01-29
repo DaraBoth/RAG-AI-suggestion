@@ -29,7 +29,7 @@ export async function GET(request: NextRequest) {
     let totalCharacters = 0
     
     if (uniqueFiles) {
-      uniqueFiles.forEach(chunk => {
+      uniqueFiles.forEach((chunk: any) => {
         if (chunk.metadata?.filename) {
           fileNames.add(chunk.metadata.filename)
         }
@@ -48,12 +48,12 @@ export async function GET(request: NextRequest) {
       .limit(1)
       .single()
 
-    let lastTrainingDate = null
-    let lastTrainingFile = null
+    let lastTrainingDate: string | null = null
+    let lastTrainingFile: string | null = null
     
     if (!latestError && latestChunk) {
-      lastTrainingDate = latestChunk.created_at
-      lastTrainingFile = latestChunk.metadata?.filename
+      lastTrainingDate = (latestChunk as any).created_at
+      lastTrainingFile = (latestChunk as any).metadata?.filename
     }
 
     return NextResponse.json({
