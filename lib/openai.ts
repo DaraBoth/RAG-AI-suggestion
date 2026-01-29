@@ -57,15 +57,15 @@ export async function generateWordCompletion(userInput: string, incompleteWord: 
     messages: [
       {
         role: 'system',
-        content: 'You are a word completion assistant for professional business writing. The user is typing a word but hasn\'t finished it yet. Complete ONLY the word they are typing, not the entire sentence. Return just the completed word, nothing else. Use professional business vocabulary.',
+        content: 'You are a word completion assistant. Your ONLY job is to complete incomplete words. DO NOT respond conversationally. DO NOT greet or chat. If the user types "Hello" or greetings, just return the complete word. Return ONLY the completed word, nothing else.',
       },
       {
         role: 'user',
-        content: `Context: "${userInput}"\nIncomplete word: "${incompleteWord}"\n\nComplete this word in a way that makes sense in the context. Return ONLY the completed word, nothing else.`,
+        content: `Context: "${userInput}"\nIncomplete word: "${incompleteWord}"\n\nComplete this word. Return ONLY the completed word, no explanations or greetings.`,
       },
     ],
     max_tokens: 20,
-    temperature: 0.3,
+    temperature: 0.1,
   })
 
   const completion = response.choices[0]?.message?.content?.trim() || ''
@@ -83,11 +83,11 @@ export async function generatePhraseSuggestion(userInput: string): Promise<strin
     messages: [
       {
         role: 'system',
-        content: 'You are a professional business writing assistant. The user has finished typing a word and wants to continue the sentence. Suggest the next natural phrase or continuation that fits the context. Keep it professional, concise (5-15 words), and contextually appropriate for business communication. Return ONLY the suggested continuation, without repeating what the user already wrote.',
+        content: 'You are an autocomplete assistant. Your ONLY job is to continue the user\'s sentence, NOT to respond to it. DO NOT greet, chat, or answer questions. If user types "Hello", continue with what might come next like "there" or "everyone", NOT respond to the greeting. Return ONLY the next 3-10 words to continue their sentence.',
       },
       {
         role: 'user',
-        content: `Continue this professional text naturally: "${userInput}"`,
+        content: `Continue this text (do not respond to it, just continue): "${userInput}"`,
       },
     ],
     max_tokens: 50,
@@ -158,16 +158,16 @@ export async function generateSmartPhraseSuggestion(
     messages: [
       {
         role: 'system',
-        content: `You are an intelligent autocomplete assistant. Your job is to suggest the next phrase/words that should come after the user's input.
+        content: `You are an autocomplete assistant. Your ONLY job is to CONTINUE the user's text, NOT respond to it.
 
 Rules:
-1. If context is provided from the knowledge base, USE IT to generate accurate suggestions based on trained data
-2. The suggestion should be a DIRECT CONTINUATION of what the user typed
-3. Keep suggestions SHORT (3-10 words maximum)
-4. Return ONLY the continuation text, without repeating what the user already typed
-5. Match the language and tone of the user's input
-6. If the context shows an exact match or similar pattern, follow it closely
-7. Be concise and natural - this is autocomplete, not a full response`,
+1. DO NOT respond conversationally (no "Hello!", "Sure!", "I can help")
+2. DO NOT answer questions - just continue the sentence
+3. If user types "Hello", continue with "there", "everyone", "world" - NOT "Hello! How can I help?"
+4. Use context from knowledge base to predict what comes NEXT
+5. Return ONLY 3-10 words that continue the sentence
+6. Match the language and style of the input
+7. This is AUTOCOMPLETE, not chat`,
       },
       {
         role: 'user',
@@ -176,7 +176,7 @@ Rules:
 Retrieved context from knowledge base:
 ${contextText}
 
-Based on the context above (if relevant), suggest what should come next after "${userInput}". Return only the continuation, not the full sentence.`,
+Continue (don't respond to) the text. Return only what comes next.`,
       },
     ],
     max_tokens: 50,
@@ -203,14 +203,14 @@ export async function generateSmartWordCompletion(
     messages: [
       {
         role: 'system',
-        content: `You are an intelligent word completion assistant. Complete the incomplete word based on context.
+        content: `You are a word completion assistant. Complete incomplete words ONLY. DO NOT chat, greet, or respond conversationally.
 
 Rules:
-1. Return ONLY the completed word, nothing else
-2. If context shows the word being used, complete it that way
-3. Match the language of the incomplete word (English, Korean, etc.)
-4. Keep the same capitalization style
-5. Return just ONE word`,
+1. Return ONLY the completed word
+2. If context shows the word, use that
+3. Match the language (English, Korean, Chinese, etc.)
+4. DO NOT add explanations, greetings, or extra text
+5. Just ONE word`,
       },
       {
         role: 'user',
@@ -220,11 +220,11 @@ Incomplete word: "${incompleteWord}"
 Context from knowledge base:
 ${contextText}
 
-Complete the word "${incompleteWord}". Return only the completed word.`,
+Complete "${incompleteWord}". Return only the word.`,
       },
     ],
     max_tokens: 20,
-    temperature: 0.2,
+    temperature: 0.1,
   })
 
   return response.choices[0]?.message?.content?.trim() || incompleteWord

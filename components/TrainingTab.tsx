@@ -104,60 +104,95 @@ export default function TrainingTab() {
   const onDrop = useCallback(async (acceptedFiles: File[]) => {
     if (acceptedFiles.length === 0) return
 
-    const file = acceptedFiles[0]
-
-    if (file.type !== 'application/pdf') {
+    // Filter only PDF files
+    const pdfFiles = acceptedFiles.filter(file => file.type === 'application/pdf')
+    
+    if (pdfFiles.length === 0) {
       setUploadStatus({
         status: 'error',
-        message: 'Please upload a PDF file',
+        message: 'Please upload PDF files only',
       })
       return
     }
 
-    setUploadStatus({
-      status: 'uploading',
-      message: `Uploading ${file.name}...`,
-      filename: file.name,
-    })
+    // Add beforeunload listener to prevent accidental page close
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      e.preventDefault()
+      e.returnValue = ''
+      return ''
+    }
+    window.addEventListener('beforeunload', handleBeforeUnload)
 
-    try {
-      const formData = new FormData()
-      formData.append('file', file)
+    let successCount = 0
+    let errorCount = 0
+    const errors: string[] = []
 
-      const response = await fetch('/api/train', {
-        method: 'POST',
-        body: formData,
+    // Process files one by one
+    for (let i = 0; i < pdfFiles.length; i++) {
+      const file = pdfFiles[i]
+
+      setUploadStatus({
+        status: 'uploading',
+        message: `Processing ${i + 1} of ${pdfFiles.length}: ${file.name}...`,
+        filename: file.name,
       })
 
-      const data = await response.json()
+      try {
+        const formData = new FormData()
+        formData.append('file', file)
 
-      if (response.ok) {
-        setUploadStatus({
-          status: 'success',
-          message: data.message,
-          filename: data.filename,
-          chunks: data.chunks,
+        const response = await fetch('/api/train', {
+          method: 'POST',
+          body: formData,
         })
-      } else {
-        setUploadStatus({
-          status: 'error',
-          message: data.error || 'Failed to process PDF',
-        })
+
+        const data = await response.json()
+
+        if (response.ok) {
+          successCount++
+          // Fetch stats after each successful file
+          await fetchStats()
+        } else {
+          errorCount++
+          errors.push(`${file.name}: ${data.error || 'Failed to process'}`)
+        }
+      } catch (error) {
+        errorCount++
+        errors.push(`${file.name}: Network error`)
+        console.error(`Error processing ${file.name}:`, error)
       }
-    } catch (error) {
+    }
+
+    // Remove beforeunload listener after processing
+    window.removeEventListener('beforeunload', handleBeforeUnload)
+
+    // Set final status
+    if (successCount === pdfFiles.length) {
+      setUploadStatus({
+        status: 'success',
+        message: `Successfully processed all ${successCount} file(s)`,
+        chunks: successCount,
+      })
+    } else if (successCount > 0) {
+      setUploadStatus({
+        status: 'success',
+        message: `Processed ${successCount} of ${pdfFiles.length} files. ${errorCount} failed: ${errors.join(', ')}`,
+        chunks: successCount,
+      })
+    } else {
       setUploadStatus({
         status: 'error',
-        message: 'Network error. Please try again.',
+        message: `All files failed to process: ${errors.join(', ')}`,
       })
     }
-  }, [])
+  }, [fetchStats, setUploadStatus])
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     accept: {
       'application/pdf': ['.pdf'],
     },
-    multiple: false,
+    multiple: true, // Enable multiple file upload
     disabled: uploadStatus.status === 'uploading',
   })
 
@@ -283,10 +318,10 @@ export default function TrainingTab() {
                 <Upload className="mx-auto h-8 w-8 sm:h-12 sm:w-12 text-muted-foreground" />
                 <div>
                   <p className="text-sm sm:text-lg font-medium">
-                    {isDragActive ? 'Drop your PDF here' : 'Drop PDF file here or click to browse'}
+                    {isDragActive ? 'Drop your PDF files here' : 'Drop PDF files here or click to browse'}
                   </p>
                   <p className="mt-1 sm:mt-2 text-xs sm:text-sm text-muted-foreground">
-                    Supports PDF files up to 10MB
+                    Supports multiple PDF files up to 10MB each
                   </p>
                 </div>
               </div>
@@ -298,7 +333,7 @@ export default function TrainingTab() {
                 <div>
                   <p className="text-sm sm:text-lg font-medium">{uploadStatus.message}</p>
                   <p className="mt-1 sm:mt-2 text-xs sm:text-sm text-muted-foreground">
-                    Processing your PDF and generating embeddings...
+                    Please wait... Do not close or refresh this page
                   </p>
                 </div>
               </div>
