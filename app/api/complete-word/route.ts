@@ -1,0 +1,199 @@
+import { NextRequest, NextResponse } from 'next/server'
+import { supabase } from '@/lib/supabase'
+import { generateEmbedding, generateWordCompletion, generateSmartWordCompletion } from '@/lib/openai'
+
+interface MatchResult {
+  id: number
+  content: string
+  metadata: any
+  similarity: number
+}
+
+export async function POST(request: NextRequest) {
+  try {
+    const body = await request.json()
+    const { text, incompleteWord } = body
+
+    if (!text || typeof text !== 'string' || text.trim().length === 0) {
+      return NextResponse.json(
+        { error: 'Invalid text provided' },
+        { status: 400 }
+      )
+    }
+
+    if (!incompleteWord || typeof incompleteWord !== 'string') {
+      return NextResponse.json(
+        { error: 'Invalid incomplete word provided' },
+        { status: 400 }
+      )
+    }
+
+    // Generate embedding for the full context
+    const embedding = await generateEmbedding(text)
+
+    // Query Supabase for similar chunks using the match_chunks function
+    const { data, error } = await supabase.rpc('match_chunks' as any, {
+      query_embedding: embedding,
+      match_threshold: 0.3,
+      match_count: 10,
+    } as any)
+
+    if (error) {
+      console.error('Error querying chunks:', error)
+      return NextResponse.json(
+        { error: 'Failed to query database' },
+        { status: 500 }
+      )
+    }
+
+    const matches = data as any[]
+
+    // If no matches found, use OpenAI completion as fallback
+    if (!matches || matches.length === 0) {
+      console.log('No trained data found, using OpenAI word completion fallback')
+      
+      try {
+        const completion = await generateWordCompletion(text, incompleteWord)
+        
+        return NextResponse.json({
+          suggestions: [{
+            text: completion,
+            source: 'openai-fallback' as const,
+          }],
+          matches: [],
+          type: 'word',
+        })
+      } catch (fallbackError) {
+        console.error('Fallback completion error:', fallbackError)
+        return NextResponse.json({
+          suggestions: [],
+          matches: [],
+          error: 'No trained data available and fallback failed',
+        })
+      }
+    }
+
+    // AI Agent Pattern with RAG:
+    // 1. We have the user input (text) and incomplete word
+    // 2. We retrieved relevant context from vector DB (matches)
+    // 3. Use AI to generate intelligent word completions
+    
+    console.log('Using AI Agent with RAG for word completion - Retrieved chunks:', matches.length)
+    
+    try {
+      // Pass context chunks to AI for intelligent word completion
+      const contextChunks = matches.map(m => m.content)
+      const aiCompletion = await generateSmartWordCompletion(text, incompleteWord, contextChunks)
+
+      // Also try to extract direct completions from top matches as alternatives
+      const directCompletions = matches
+        .slice(0, 3) // Only use top 3 matches
+        .map(match => {
+          const completion = findWordCompletion(text, incompleteWord, match.content)
+          return {
+            text: completion,
+            source: 'trained-data' as const,
+            similarity: match.similarity,
+          }
+        })
+        .filter(s => s.text && s.text.trim().length > 0 && s.text.length < 50) // Word completions should be short
+
+      // Prioritize AI completion, then add direct extractions
+      const allSuggestions = [
+        {
+          text: aiCompletion,
+          source: 'trained-data' as const,
+          similarity: matches[0]?.similarity || 0,
+        },
+        ...directCompletions
+      ].filter((s, index, self) => 
+        // Remove duplicates and empty
+        s.text && s.text.trim().length > 0 &&
+        self.findIndex(t => t.text === s.text) === index
+      ).slice(0, 5) // Limit to top 5
+
+      return NextResponse.json({
+        suggestions: allSuggestions,
+        matches: matches.map(m => ({
+          content: m.content.substring(0, 100) + '...',
+          similarity: m.similarity,
+        })),
+        type: 'word',
+      })
+    } catch (aiError) {
+      console.error('AI Agent word completion error:', aiError)
+      
+      // Fallback to direct pattern matching only if AI fails
+      const suggestions = matches
+        .slice(0, 5)
+        .map(match => {
+          const completion = findWordCompletion(text, incompleteWord, match.content)
+          return {
+            text: completion,
+            source: 'trained-data' as const,
+            similarity: match.similarity,
+          }
+        })
+        .filter(s => s.text && s.text.trim().length > 0 && s.text.length < 50)
+
+      return NextResponse.json({
+        suggestions,
+        matches: matches.map(m => ({
+          content: m.content.substring(0, 100) + '...',
+          similarity: m.similarity,
+        })),
+        type: 'word',
+      })
+    }
+
+  } catch (error) {
+    console.error('Word completion error:', error)
+    return NextResponse.json(
+      { error: 'Failed to generate word completion' },
+      { status: 500 }
+    )
+  }
+}
+
+/**
+ * Find a word completion from matched content
+ */
+function findWordCompletion(text: string, incompleteWord: string, matchedContent: string): string {
+  const words = matchedContent.split(/\s+/)
+  
+  // Find words in content that start with the incomplete word (case-insensitive for ASCII, exact for others)
+  for (const word of words) {
+    const cleanWord = word.replace(/[.,!?;:'"]/g, '')
+    
+    // For ASCII text, use case-insensitive matching
+    if (/^[a-zA-Z]+$/.test(incompleteWord)) {
+      if (cleanWord.toLowerCase().startsWith(incompleteWord.toLowerCase()) && 
+          cleanWord.length > incompleteWord.length) {
+        return cleanWord
+      }
+    } 
+    // For non-ASCII (Korean, Chinese, etc.), use exact prefix matching
+    else {
+      if (cleanWord.startsWith(incompleteWord) && cleanWord.length > incompleteWord.length) {
+        return cleanWord
+      }
+    }
+  }
+  
+  // If no exact match, look for the continuation after the incomplete word in the content
+  const contentLower = matchedContent.toLowerCase()
+  const incompleteLower = incompleteWord.toLowerCase()
+  const index = contentLower.indexOf(incompleteLower)
+  
+  if (index !== -1) {
+    // Find the next word boundary
+    const afterIncomplete = matchedContent.substring(index + incompleteWord.length)
+    const nextWordMatch = afterIncomplete.match(/^\S+/)
+    if (nextWordMatch) {
+      return incompleteWord + nextWordMatch[0]
+    }
+  }
+  
+  // If no match found, return the incomplete word as-is
+  return incompleteWord
+}
