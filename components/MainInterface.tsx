@@ -8,18 +8,18 @@ import { MessageSquare, BookOpen, MessagesSquare, Github, Coffee, Heart } from '
 
 export default function MainInterface() {
   return (
-    <div className="container mx-auto max-w-4xl px-4 py-12">
+    <div className="container mx-auto max-w-4xl px-3 sm:px-4 py-6 sm:py-12">
       {/* Header */}
-      <div className="mb-12 text-center">
-        <h1 className="mb-4 text-4xl font-bold tracking-tight text-white">
+      <div className="mb-8 sm:mb-12 text-center">
+        <h1 className="mb-3 sm:mb-4 text-2xl sm:text-4xl font-bold tracking-tight text-white">
           ✨ Smart AI Chat Input
         </h1>
-        <p className="text-lg text-white/60">
+        <p className="text-sm sm:text-lg text-white/60 px-2">
           Train your AI with PDFs, get smart suggestions, and chat with your knowledge base
         </p>
         
         {/* Links Section */}
-        <div className="mt-6 flex items-center justify-center gap-4">
+        <div className="mt-4 sm:mt-6 flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4">
           <a
             href="https://github.com/DaraBoth/fine-tune-AI-suggestion"
             target="_blank"
@@ -48,27 +48,30 @@ export default function MainInterface() {
 
       {/* Tabs Navigation */}
       <Tabs defaultValue="autocomplete" className="w-full">
-        <TabsList className="mb-8 grid w-full grid-cols-3 bg-white/10 p-1 backdrop-blur-xl">
+        <TabsList className="mb-6 sm:mb-8 grid w-full grid-cols-3 bg-white/10 p-1 backdrop-blur-xl">
           <TabsTrigger
             value="autocomplete"
-            className="flex items-center gap-2 data-[state=active]:bg-white/20 data-[state=active]:text-white"
+            className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm data-[state=active]:bg-white/20 data-[state=active]:text-white"
           >
-            <MessageSquare className="h-4 w-4" />
-            Autocomplete
+            <MessageSquare className="h-3 w-3 sm:h-4 sm:w-4" />
+            <span className="hidden xs:inline">Autocomplete</span>
+            <span className="xs:hidden">Auto</span>
           </TabsTrigger>
           <TabsTrigger
             value="chat"
-            className="flex items-center gap-2 data-[state=active]:bg-white/20 data-[state=active]:text-white"
+            className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm data-[state=active]:bg-white/20 data-[state=active]:text-white"
           >
-            <MessagesSquare className="h-4 w-4" />
-            AI Chat
+            <MessagesSquare className="h-3 w-3 sm:h-4 sm:w-4" />
+            <span className="hidden xs:inline">AI Chat</span>
+            <span className="xs:hidden">Chat</span>
           </TabsTrigger>
           <TabsTrigger
             value="training"
-            className="flex items-center gap-2 data-[state=active]:bg-white/20 data-[state=active]:text-white"
+            className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm data-[state=active]:bg-white/20 data-[state=active]:text-white"
           >
-            <BookOpen className="h-4 w-4" />
-            Training
+            <BookOpen className="h-3 w-3 sm:h-4 sm:w-4" />
+            <span className="hidden xs:inline">Training</span>
+            <span className="xs:hidden">Train</span>
           </TabsTrigger>
         </TabsList>
 
@@ -89,8 +92,8 @@ export default function MainInterface() {
       </Tabs>
       
       {/* Footer */}
-      <div className="mt-12 text-center">
-        <p className="flex items-center justify-center gap-1 text-sm text-white/40">
+      <div className="mt-8 sm:mt-12 text-center">
+        <p className="flex items-center justify-center gap-1 text-xs sm:text-sm text-white/40">
           Built with <Heart className="h-3 w-3 fill-red-500 text-red-500" /> by
           <a
             href="https://github.com/DaraBoth"
@@ -98,7 +101,7 @@ export default function MainInterface() {
             rel="noopener noreferrer"
             className="text-white/60 transition-colors hover:text-white"
           >
-            DaraBoth
+            Bros smos
           </a>
         </p>
         <p className="mt-2 text-xs text-white/30">

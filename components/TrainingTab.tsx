@@ -169,62 +169,62 @@ export default function TrainingTab() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Training Statistics */}
       {stats && stats.totalChunks > 0 && (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-3 sm:gap-4 grid-cols-2 lg:grid-cols-4">
           <Card className="border-white/10 bg-white/5 backdrop-blur-xl relative overflow-hidden">
             <BorderBeam size={200} duration={12} delay={0} />
-            <CardContent className="p-6">
+            <CardContent className="p-3 sm:p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground">Total Chunks</p>
-                  <div className="text-2xl font-bold text-primary">
+                  <p className="text-xs sm:text-sm text-muted-foreground">Total Chunks</p>
+                  <div className="text-xl sm:text-2xl font-bold text-primary">
                     <NumberTicker key={`chunks-${stats.totalChunks}`} value={loadingStats ? 0 : stats.totalChunks} />
                   </div>
                 </div>
-                <Database className="h-8 w-8 text-primary/50" />
+                <Database className="h-6 w-6 sm:h-8 sm:w-8 text-primary/50" />
               </div>
             </CardContent>
           </Card>
 
           <Card className="border-white/10 bg-white/5 backdrop-blur-xl relative overflow-hidden">
             <BorderBeam size={200} duration={12} delay={3} />
-            <CardContent className="p-6">
+            <CardContent className="p-3 sm:p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground">Files Trained</p>
-                  <div className="text-2xl font-bold text-emerald-400">
+                  <p className="text-xs sm:text-sm text-muted-foreground">Files Trained</p>
+                  <div className="text-xl sm:text-2xl font-bold text-emerald-400">
                     <NumberTicker key={`files-${stats.totalFiles}`} value={loadingStats ? 0 : stats.totalFiles} />
                   </div>
                 </div>
-                <FileStack className="h-8 w-8 text-emerald-400/50" />
+                <FileStack className="h-6 w-6 sm:h-8 sm:w-8 text-emerald-400/50" />
               </div>
             </CardContent>
           </Card>
 
           <Card className="border-white/10 bg-white/5 backdrop-blur-xl relative overflow-hidden">
             <BorderBeam size={200} duration={12} delay={6} />
-            <CardContent className="p-6">
+            <CardContent className="p-3 sm:p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground">Total Characters</p>
-                  <div className="text-2xl font-bold text-blue-400">
+                  <p className="text-xs sm:text-sm text-muted-foreground">Total Characters</p>
+                  <div className="text-xl sm:text-2xl font-bold text-blue-400">
                     <NumberTicker key={`chars-${stats.totalCharacters}`} value={loadingStats ? 0 : stats.totalCharacters / 1000} decimalPlaces={1} />K
                   </div>
                 </div>
-                <BarChart3 className="h-8 w-8 text-blue-400/50" />
+                <BarChart3 className="h-6 w-6 sm:h-8 sm:w-8 text-blue-400/50" />
               </div>
             </CardContent>
           </Card>
 
           <Card className="border-white/10 bg-white/5 backdrop-blur-xl relative overflow-hidden">
             <BorderBeam size={200} duration={12} delay={9} />
-            <CardContent className="p-6">
+            <CardContent className="p-3 sm:p-6">
               <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">Last Training</p>
-                  <p className="text-sm font-medium text-purple-400">
+                <div className="min-w-0">
+                  <p className="text-xs sm:text-sm text-muted-foreground">Last Training</p>
+                  <p className="text-xs sm:text-sm font-medium text-purple-400 truncate">
                     {stats.lastTrainingDate 
                       ? new Date(stats.lastTrainingDate).toLocaleString('en-US', {
                           month: 'short',
@@ -237,7 +237,7 @@ export default function TrainingTab() {
                     }
                   </p>
                 </div>
-                <Calendar className="h-8 w-8 text-purple-400/50" />
+                <Calendar className="h-6 w-6 sm:h-8 sm:w-8 text-purple-400/50 flex-shrink-0" />
               </div>
             </CardContent>
           </Card>
@@ -246,7 +246,7 @@ export default function TrainingTab() {
 
       <Card className="border-white/10 bg-white/5 backdrop-blur-xl relative overflow-hidden">
         <BorderBeam size={250} duration={15} delay={0} />
-        <CardHeader>
+        <CardHeader className="p-4 sm:p-6">
           <Sparkles
             className="inline-block"
             density={60}
@@ -254,20 +254,20 @@ export default function TrainingTab() {
             speed={1.2}
             color="#a78bfa"
           >
-            <CardTitle className="text-2xl bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+            <CardTitle className="text-xl sm:text-2xl bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
               Train Your AI
             </CardTitle>
           </Sparkles>
-          <CardDescription>
+          <CardDescription className="text-xs sm:text-sm">
             Upload PDF files to train the AI with your custom content. The text will be chunked
             and embedded for intelligent suggestions.
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-4 sm:p-6">
           <div
             {...getRootProps()}
             className={`
-              relative rounded-lg border-2 border-dashed p-12 text-center transition-all
+              relative rounded-lg border-2 border-dashed p-6 sm:p-12 text-center transition-all
               ${
                 isDragActive
                   ? 'border-primary bg-primary/10'
@@ -279,13 +279,13 @@ export default function TrainingTab() {
             <input {...getInputProps()} />
             
             {uploadStatus.status === 'idle' && (
-              <div className="space-y-4">
-                <Upload className="mx-auto h-12 w-12 text-muted-foreground" />
+              <div className="space-y-3 sm:space-y-4">
+                <Upload className="mx-auto h-8 w-8 sm:h-12 sm:w-12 text-muted-foreground" />
                 <div>
-                  <p className="text-lg font-medium">
+                  <p className="text-sm sm:text-lg font-medium">
                     {isDragActive ? 'Drop your PDF here' : 'Drop PDF file here or click to browse'}
                   </p>
-                  <p className="mt-2 text-sm text-muted-foreground">
+                  <p className="mt-1 sm:mt-2 text-xs sm:text-sm text-muted-foreground">
                     Supports PDF files up to 10MB
                   </p>
                 </div>
@@ -293,11 +293,11 @@ export default function TrainingTab() {
             )}
 
             {uploadStatus.status === 'uploading' && (
-              <div className="space-y-4">
-                <Loader2 className="mx-auto h-12 w-12 animate-spin text-primary" />
+              <div className="space-y-3 sm:space-y-4">
+                <Loader2 className="mx-auto h-8 w-8 sm:h-12 sm:w-12 animate-spin text-primary" />
                 <div>
-                  <p className="text-lg font-medium">{uploadStatus.message}</p>
-                  <p className="mt-2 text-sm text-muted-foreground">
+                  <p className="text-sm sm:text-lg font-medium">{uploadStatus.message}</p>
+                  <p className="mt-1 sm:mt-2 text-xs sm:text-sm text-muted-foreground">
                     Processing your PDF and generating embeddings...
                   </p>
                 </div>

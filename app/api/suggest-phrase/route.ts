@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
     const { data, error } = await supabase.rpc('match_chunks' as any, {
       query_embedding: embedding,
       match_threshold: 0.3,
-      match_count: 10,
+      match_count: 5, // Reduced from 10 for faster response
     } as any)
 
     console.log({data});
@@ -85,13 +85,13 @@ export async function POST(request: NextRequest) {
     console.log('Using AI Agent with RAG - Retrieved chunks:', matches.length)
     
     try {
-      // Pass context chunks to AI for intelligent processing
-      const contextChunks = matches.map(m => m.content)
+      // Pass only top 3 context chunks to AI for faster processing
+      const contextChunks = matches.slice(0, 3).map(m => m.content)
       const aiSuggestion = await generateSmartPhraseSuggestion(text, contextChunks)
 
       // Also try to extract direct suggestions from top matches as alternatives
       const directSuggestions = matches
-        .slice(0, 3) // Only use top 3 matches
+        .slice(0, 2) // Only use top 2 matches for faster processing
         .map(match => {
           const suggestion = generatePhraseSuggestionFromContent(text, match.content)
           return {

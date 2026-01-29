@@ -140,7 +140,7 @@ export default function ChatInput() {
       clearTimeout(debounceTimerRef.current)
     }
 
-    // Set new timer for debounced API call (1000ms = 1 second)
+    // Set new timer for debounced API call (500ms for faster response)
     debounceTimerRef.current = setTimeout(() => {
       // Only fetch suggestion if language matches preference
       if (matchesPreferredLanguage(value, preferredLanguage)) {
@@ -149,7 +149,7 @@ export default function ChatInput() {
         // Clear suggestions if language doesn't match
         setSuggestions([])
       }
-    }, 1000)
+    }, 500)
   }
 
   /**
@@ -296,10 +296,10 @@ export default function ChatInput() {
     <div className="space-y-6">
       <Card className="border-white/10 bg-white/5 backdrop-blur-xl relative z-10">
         <BorderBeam size={300} duration={18} delay={0} />
-        <CardContent className="p-6">
+        <CardContent className="p-4 sm:p-6">
           <div className="space-y-4">
-            <div className="flex items-start justify-between gap-4">
-              <div>
+            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 sm:gap-4">
+              <div className="flex-1">
                 <Sparkles
                   className="inline-block"
                   density={50}
@@ -307,22 +307,22 @@ export default function ChatInput() {
                   speed={1}
                   color="#60a5fa"
                 >
-                  <h3 className="text-lg font-semibold bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
+                  <h3 className="text-base sm:text-lg font-semibold bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
                     Smart Suggestion
                   </h3>
                 </Sparkles>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-xs sm:text-sm text-muted-foreground">
                   Type to get intelligent suggestions from your trained AI
                 </p>
               </div>
               
               {/* Language Preference Selector */}
-              <div className="flex items-center gap-2">
-                <Languages className="h-4 w-4 text-muted-foreground" />
+              <div className="flex items-center gap-2 flex-shrink-0">
+                <Languages className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
                 <select
                   value={preferredLanguage}
                   onChange={handleLanguageChange}
-                  className="rounded-md border text-black px-3 py-1.5 text-sm focus:border-primary/50 focus:outline-none focus:ring-2 focus:ring-primary/20"
+                  className="rounded-md border text-black px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm focus:border-primary/50 focus:outline-none focus:ring-2 focus:ring-primary/20"
                 >
                   <option className="text-black" value="en">English</option>
                   <option className="text-black" value="zh">Chinese</option>
@@ -340,7 +340,7 @@ export default function ChatInput() {
                 onChange={handleInputChange}
                 onKeyDown={handleKeyDown}
                 placeholder="Start typing... AI will suggest completions based on your trained data"
-                className="min-h-[72px] w-full resize-none rounded-xl border-2 border-white/20 bg-slate-900/50 px-5 py-4 text-base leading-relaxed text-white caret-blue-400 placeholder:text-white/30 focus:border-blue-500/50 focus:bg-slate-800/60 focus:outline-none focus:ring-4 focus:ring-blue-500/20 transition-all duration-300"
+                className="min-h-[100px] sm:min-h-[72px] w-full resize-none rounded-xl border-2 border-white/20 bg-slate-900/50 px-3 sm:px-5 py-3 sm:py-4 text-sm sm:text-base leading-relaxed text-white caret-blue-400 placeholder:text-white/30 focus:border-blue-500/50 focus:bg-slate-800/60 focus:outline-none focus:ring-4 focus:ring-blue-500/20 transition-all duration-300"
                 spellCheck={false}
               />
               
@@ -415,8 +415,8 @@ export default function ChatInput() {
             </div>
 
             {/* Info Bar */}
-            <div className="flex items-center justify-between text-sm text-muted-foreground">
-              <div className="flex items-center gap-4">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 text-xs sm:text-sm text-muted-foreground">
+              <div className="flex items-center flex-wrap gap-2 sm:gap-4">
                 <span>{inputValue.length} characters</span>
                 
                 {/* Detected Language Indicator */}
@@ -450,42 +450,44 @@ export default function ChatInput() {
                   </span>
                 )}
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
                 <ShimmerButton
                   onClick={handleTeach}
                   disabled={!inputValue || isTeaching}
-                  className="gap-2 border-purple-500/30 bg-gradient-to-r from-purple-600 to-blue-600 text-white text-sm px-4 py-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="gap-1 sm:gap-2 border-purple-500/30 bg-gradient-to-r from-purple-600 to-blue-600 text-white text-xs sm:text-sm px-3 sm:px-4 py-1.5 sm:py-2 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {isTeaching ? (
                     <>
-                      <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                      Teaching...
+                      <div className="h-3 w-3 sm:h-4 sm:w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                      <span className="hidden xs:inline">Teaching...</span>
+                      <span className="xs:hidden">...</span>
                     </>
                   ) : teachSuccess ? (
                     <>
-                      <Check className="h-4 w-4" />
+                      <Check className="h-3 w-3 sm:h-4 sm:w-4" />
                       Taught!
                     </>
                   ) : (
                     <>
-                      <Brain className="h-4 w-4" />
-                      Teach AI
+                      <Brain className="h-3 w-3 sm:h-4 sm:w-4" />
+                      <span className="hidden xs:inline">Teach AI</span>
+                      <span className="xs:hidden">Teach</span>
                     </>
                   )}
                 </ShimmerButton>
                 <ShimmerButton
                   onClick={handleCopy}
                   disabled={!inputValue}
-                  className="gap-2 bg-gradient-to-r from-emerald-600 to-teal-600 text-white text-sm px-4 py-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="gap-1 sm:gap-2 bg-gradient-to-r from-emerald-600 to-teal-600 text-white text-xs sm:text-sm px-3 sm:px-4 py-1.5 sm:py-2 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {isCopied ? (
                     <>
-                      <Check className="h-4 w-4" />
+                      <Check className="h-3 w-3 sm:h-4 sm:w-4" />
                       Copied!
                     </>
                   ) : (
                     <>
-                      <Copy className="h-4 w-4" />
+                      <Copy className="h-3 w-3 sm:h-4 sm:w-4" />
                       Copy
                     </>
                   )}
