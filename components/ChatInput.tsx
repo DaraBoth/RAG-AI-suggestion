@@ -332,7 +332,7 @@ export default function ChatInput() {
             </div>
 
             {/* Search Bar Style Input with Dropdown Suggestions */}
-            <div className="relative z-20">
+            <div className="relative">
               {/* Input Textarea */}
               <textarea
                 ref={textareaRef}
@@ -344,9 +344,9 @@ export default function ChatInput() {
                 spellCheck={false}
               />
               
-              {/* Dropdown Suggestion List */}
+              {/* Dropdown Suggestion List - Absolutely positioned relative to textarea container */}
               {suggestions.length > 0 && (
-                <div className="absolute left-0 right-0 top-full mt-2 z-[9999] bg-slate-800/95 backdrop-blur-lg border border-white/20 rounded-lg shadow-2xl overflow-hidden max-h-80 overflow-y-auto">
+                <div className="absolute left-0 right-0 top-full mt-2 z-50 bg-slate-800/95 backdrop-blur-lg border border-white/20 rounded-lg shadow-2xl overflow-hidden max-h-80 overflow-y-auto">
                   {/* Suggestion Items */}
                   {suggestions.map((sug, index) => (
                     <button
@@ -355,7 +355,7 @@ export default function ChatInput() {
                         acceptSuggestion(sug.text)
                         textareaRef.current?.focus()
                       }}
-                      className={`w-full px-4 py-3 flex items-center gap-3 transition-colors text-left group border-b border-white/5 last:border-b-0 ${
+                      className={`w-full z-40 px-4 py-3 flex items-center gap-3 transition-colors text-left group border-b border-white/5 last:border-b-0 ${
                         index === selectedSuggestionIndex 
                           ? 'bg-blue-500/30 ring-2 ring-blue-500/50' 
                           : 'hover:bg-blue-500/20'
@@ -504,11 +504,11 @@ export default function ChatInput() {
             <div className="space-y-2">
               <p className="font-medium text-foreground">Quick Tips:</p>
               <ul className="list-inside list-disc space-y-1 text-muted-foreground">
-                <li>Upload PDFs in the Training tab to teach the AI</li>
-                <li>Start typing to see AI suggestions appear as ghost text</li>
-                <li>Press <kbd className="rounded bg-white/10 px-1.5 py-0.5 font-mono text-xs">Tab</kbd> to accept a suggestion instantly</li>
-                <li>Click Copy button to copy your text to clipboard</li>
-                <li>Suggestions are based on semantic similarity to your training data</li>
+                <li>Upload PDFs in the Train Your AI tab to teach the AI with custom content</li>
+                <li>Click <kbd className="rounded bg-white/10 px-1.5 py-0.5 font-mono text-xs">Teach AI</kbd> button to train directly from your input text</li>
+                <li>Use <kbd className="rounded bg-white/10 px-1.5 py-0.5 font-mono text-xs">↑↓</kbd> arrow keys to navigate suggestions</li>
+                <li>Press <kbd className="rounded bg-white/10 px-1.5 py-0.5 font-mono text-xs">Tab</kbd> or <kbd className="rounded bg-white/10 px-1.5 py-0.5 font-mono text-xs">Enter</kbd> to accept, or use number keys <kbd className="rounded bg-white/10 px-1.5 py-0.5 font-mono text-xs">1-5</kbd> for quick selection</li>
+                <li>Suggestions powered by RAG architecture with semantic similarity and AI processing</li>
               </ul>
             </div>
           </div>
