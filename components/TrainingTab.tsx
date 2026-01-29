@@ -34,6 +34,7 @@ export default function TrainingTab() {
 
   // Fetch training statistics
   const fetchStats = useCallback(async () => {
+    setLoadingStats(true)
     try {
       const response = await fetch('/api/training-stats')
       if (response.ok) {
@@ -179,7 +180,7 @@ export default function TrainingTab() {
                 <div>
                   <p className="text-sm text-muted-foreground">Total Chunks</p>
                   <div className="text-2xl font-bold text-primary">
-                    <NumberTicker value={loadingStats ? 0 : stats.totalChunks} />
+                    <NumberTicker key={`chunks-${stats.totalChunks}`} value={loadingStats ? 0 : stats.totalChunks} />
                   </div>
                 </div>
                 <Database className="h-8 w-8 text-primary/50" />
@@ -194,7 +195,7 @@ export default function TrainingTab() {
                 <div>
                   <p className="text-sm text-muted-foreground">Files Trained</p>
                   <div className="text-2xl font-bold text-emerald-400">
-                    <NumberTicker value={loadingStats ? 0 : stats.totalFiles} />
+                    <NumberTicker key={`files-${stats.totalFiles}`} value={loadingStats ? 0 : stats.totalFiles} />
                   </div>
                 </div>
                 <FileStack className="h-8 w-8 text-emerald-400/50" />
@@ -209,7 +210,7 @@ export default function TrainingTab() {
                 <div>
                   <p className="text-sm text-muted-foreground">Total Characters</p>
                   <div className="text-2xl font-bold text-blue-400">
-                    <NumberTicker value={loadingStats ? 0 : stats.totalCharacters / 1000} decimalPlaces={1} />K
+                    <NumberTicker key={`chars-${stats.totalCharacters}`} value={loadingStats ? 0 : stats.totalCharacters / 1000} decimalPlaces={1} />K
                   </div>
                 </div>
                 <BarChart3 className="h-8 w-8 text-blue-400/50" />

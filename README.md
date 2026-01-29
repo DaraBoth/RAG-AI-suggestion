@@ -1,12 +1,17 @@
 # ✨ TypeFlow AI - Intelligent Autocomplete with RAG & Magic UI
 
-A cutting-edge Next.js application featuring AI-powered autocomplete with Retrieval Augmented Generation (RAG), real-time training analytics, and stunning Magic UI components. Train your AI with PDF files and experience intelligent word completion and phrase suggestions powered by OpenAI embeddings and Supabase vector search.
+> **Version 1.0.0** | *Last Updated: January 29, 2026*
 
-![Next.js](https://img.shields.io/badge/Next.js-14.1.0-black?style=flat-square&logo=next.js)
-![TypeScript](https://img.shields.io/badge/TypeScript-5.3.3-blue?style=flat-square&logo=typescript)
-![Supabase](https://img.shields.io/badge/Supabase-Vector%20DB-green?style=flat-square&logo=supabase)
-![OpenAI](https://img.shields.io/badge/OpenAI-GPT--3.5-purple?style=flat-square&logo=openai)
+A cutting-edge Next.js application featuring AI-powered autocomplete with Retrieval Augmented Generation (RAG), interactive chat interface, real-time training analytics, and stunning Magic UI components. Train your AI with PDF and text files, chat with your trained data, and experience intelligent word completion and phrase suggestions powered by OpenAI embeddings and Supabase vector search.
+
+[![GitHub](https://img.shields.io/badge/GitHub-Repository-181717?style=flat-square&logo=github)](https://github.com/DaraBoth/fine-tune-AI-suggestion)
+[![Buy Me a Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-Support-FFDD00?style=flat-square&logo=buy-me-a-coffee&logoColor=black)](https://buymeacoffee.com/daraboth)
+![Next.js](https://img.shields.io/badge/Next.js-15.1.6-black?style=flat-square&logo=next.js)
+![TypeScript](https://img.shields.io/badge/TypeScript-5.7.2-blue?style=flat-square&logo=typescript)
+![Supabase](https://img.shields.io/badge/Supabase-2.49.2-green?style=flat-square&logo=supabase)
+![OpenAI](https://img.shields.io/badge/OpenAI-4.77.0-purple?style=flat-square&logo=openai)
 ![Magic UI](https://img.shields.io/badge/Magic%20UI-Components-ff69b4?style=flat-square)
+![License](https://img.shields.io/badge/License-MIT-success?style=flat-square)
 
 ## ✨ Features
 
@@ -16,34 +21,45 @@ A cutting-edge Next.js application featuring AI-powered autocomplete with Retrie
 - **Multi-Language Support**: English, Chinese, and Korean language detection and filtering
 - **Real-time Suggestions**: Debounced API calls for smooth, responsive UX
 
+### 💬 Interactive Chat Interface
+- **RAG-Powered Chat**: Chat with your trained documents using vector search
+- **Context-Aware Responses**: GPT-3.5-turbo processes relevant chunks for accurate answers
+- **Knowledge Base Indicators**: Visual badges showing when trained data is used
+- **Persistent Chat History**: Chat state saved across tab switches with Zustand
+- **Auto-scroll**: Smooth scrolling to latest messages
+
 ### 🎨 Magic UI Components
 - **ShimmerButton**: Animated gradient buttons with shimmer effects
-- **NumberTicker**: Smooth counting animations for statistics
-- **BorderBeam**: Animated border effects on cards
+- **NumberTicker**: Smooth counting animations starting from 0 with unique keys for re-animation
+- **BorderBeam**: Animated border effects on cards with staggered delays
 - **Sparkles**: Dynamic sparkle animations for headings
 
 ### 📊 Training & Analytics
 - **PDF & Text Training**: Upload PDF files or train directly from input text
-- **Real-time Statistics**: Live updates using Supabase Realtime subscriptions
+- **Real-time Statistics**: Live updates with animated number counters
 - **Training Dashboard**: Track total chunks, files trained, characters processed, and last training date
 - **Persistent State**: Training status preserved across tab switches with Zustand
+- **Auto-refresh**: Statistics update automatically after successful uploads
 
 ### ⌨️ Advanced UX
 - **Dropdown Suggestions**: Google-style suggestion list with similarity scores
 - **Keyboard Navigation**: Arrow keys, Tab/Enter, number keys (1-5), and Escape
 - **Source Badges**: Visual indicators for trained data vs AI-generated suggestions
 - **Language Detection**: Automatic language detection with mismatch warnings
+- **Copy to Clipboard**: One-click text copying with visual feedback
 
 ## 🏗️ Tech Stack
 
-- **Framework**: Next.js 14.1.0 (App Router)
-- **Language**: TypeScript
-- **Styling**: Tailwind CSS + shadcn/ui + Magic UI
-- **State Management**: Zustand with localStorage persistence
-- **Database**: Supabase (PostgreSQL with pgvector + Realtime)
-- **AI**: OpenAI API (text-embedding-3-small + GPT-3.5-turbo)
-- **PDF Processing**: pdf-parse
-- **Animations**: Framer Motion
+- **Framework**: Next.js 15.1.6 (App Router)
+- **Language**: TypeScript 5.7.2
+- **Styling**: Tailwind CSS 3.4.17 + shadcn/ui + Magic UI
+- **State Management**: Zustand 5.0.2 with localStorage persistence
+- **Database**: Supabase 2.49.2 (PostgreSQL with pgvector)
+- **AI**: OpenAI API 4.77.0 (text-embedding-3-small + GPT-3.5-turbo)
+- **PDF Processing**: pdf-parse 1.1.1
+- **Animations**: Framer Motion 11.15.0
+- **File Upload**: react-dropzone 14.3.5
+- **UI Components**: Radix UI (Tabs, Slot) + Lucide React 0.468.0
 
 ## 📋 Prerequisites
 
@@ -55,9 +71,13 @@ Before you begin, ensure you have:
 
 ## 🛠️ Setup Instructions
 
-### 1. Clone and Install Dependencies
+### 1. Clone the Repository
 
 ```bash
+# Clone from GitHub
+git clone https://github.com/DaraBoth/fine-tune-AI-suggestion.git
+cd fine-tune-AI-suggestion
+
 # Install dependencies
 npm install
 ```
@@ -165,11 +185,11 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 1. Click on the **Train Your AI** tab
 2. Drag and drop PDF files or click to browse
 3. The system will:
-   - Extract text from the PDF
+   - Extract text from the PDF using pdf-parse
    - Split into manageable chunks (1000 chars with 200 char overlap)
-   - Generate embeddings for each chunk using OpenAI
+   - Generate embeddings for each chunk using OpenAI (text-embedding-3-small)
    - Store chunks with metadata in Supabase
-4. Watch the statistics update in real-time
+4. Watch the statistics update with animated number counters
 
 #### Method 2: Train from Input Text
 1. Type or paste text in the **Smart Suggestion** input area
@@ -179,29 +199,42 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ### Using Smart Suggestions
 
-1. Start typing in the input field
-2. The system will:
+1. Navigate to the **Smart Suggestion** tab
+2. Start typing in the input field
+3. The system will:
    - **Word Completion**: If typing mid-word, suggests completions
    - **Phrase Suggestion**: If after a space, suggests next phrases
-3. View multiple suggestions in the dropdown:
+4. View multiple suggestions in the dropdown:
    - **Similarity %**: See how relevant each suggestion is
    - **Source Badge**: Green (Trained Data) or Purple (AI Generated)
-4. Accept suggestions:
+5. Accept suggestions:
    - **Arrow Keys**: Navigate through suggestions
    - **Tab/Enter**: Accept selected suggestion
    - **1-5 Keys**: Quick select by number
    - **Escape**: Close suggestions
-5. Click **Copy** (teal gradient) to copy text to clipboard
+6. Click **Copy** (teal gradient) to copy text to clipboard
+
+### Chat with Your Data
+
+1. Navigate to the **Chat with AI** tab
+2. Type questions or messages related to your trained content
+3. The AI will:
+   - Search your trained documents using vector similarity
+   - Use top relevant chunks as context
+   - Generate responses using GPT-3.5-turbo
+4. Look for the knowledge base indicator (green badge) on AI responses
+5. Chat history is automatically saved and persists across sessions
+6. Click **Clear Chat** to start a fresh conversation
 
 ### Real-time Training Analytics
 
-The dashboard shows live statistics:
-- **Total Chunks**: Number of text chunks stored
+The dashboard shows live statistics with animated counters:
+- **Total Chunks**: Number of text chunks stored (animated from 0)
 - **Files Trained**: Count of trained PDF files
-- **Total Characters**: Total characters processed (animated counter)
+- **Total Characters**: Total characters processed with decimal animation (K format)
 - **Last Training**: Date and time of most recent training
 
-Statistics update automatically via Supabase Realtime subscriptions!
+Statistics automatically refresh after successful uploads with smooth number animations!
 
 ## 🎨 Magic UI Components
 
@@ -213,9 +246,10 @@ Animated gradient buttons with shimmer effects:
 
 ### Number Tickers
 Smooth counting animations that:
-- Start from 0 on page load
+- Start from 0 on every update (using unique keys)
 - Animate to actual values when data loads
-- Support decimal places for characters count
+- Support decimal places for characters count (K format)
+- Re-animate when values change using key-based remounting
 
 ### Border Beam
 Animated colored beams that travel around card borders with staggered delays
@@ -236,38 +270,50 @@ typeflow-ai/
 │   │   ├── suggest-phrase/
 │   │   │   └── route.ts          # Phrase suggestion with RAG
 │   │   ├── train/
-│   │   │   └── route.ts          # PDF/text upload & training
+│   │   │   └── route.ts          # PDF/text upload & training (fixed TypeScript errors)
 │   │   ├── training-stats/
-│   │   │   └── route.ts          # Real-time training statistics
-│   │   └── chat/
-│   │       └── route.ts          # Legacy chat endpoint
+│   │   │   └── route.ts          # Training statistics (fixed TypeScript errors)
+│   │   ├── chat/
+│   │   │   └── route.ts          # RAG-powered chat with trained data
+│   │   └── suggest/
+│   │       └── route.ts          # Legacy suggestion endpoint
 │   ├── layout.tsx                # Root layout with dark theme
-│   ├── page.tsx                  # Home page with tab interface
+│   ├── page.tsx                  # Home page with 3-tab interface
 │   └── globals.css               # Global styles + Magic UI animations
 ├── components/
 │   ├── ui/                       # shadcn/ui + Magic UI components
-│   │   ├── shimmer-button.tsx
-│   │   ├── number-ticker.tsx
-│   │   ├── border-beam.tsx
-│   │   └── sparkles.tsx
+│   │   ├── shimmer-button.tsx    # Animated gradient buttons
+│   │   ├── number-ticker.tsx     # Counting animations with framer-motion
+│   │   ├── border-beam.tsx       # Animated card borders
+│   │   ├── sparkles.tsx          # Dynamic sparkle effects
+│   │   ├── tabs.tsx              # Radix UI tabs component
+│   │   ├── button.tsx            # Base button component
+│   │   ├── card.tsx              # Card components
+│   │   └── textarea.tsx          # Textarea component
 │   ├── ChatInput.tsx             # Smart suggestion input with dropdown
-│   ├── TrainingTab.tsx           # Training interface with analytics
-│   ├── ChatInterface.tsx         # Legacy chat interface
-│   └── MainInterface.tsx         # Tab container
+│   ├── TrainingTab.tsx           # Training interface with animated analytics
+│   ├── ChatInterface.tsx         # RAG-powered chat interface
+│   └── MainInterface.tsx         # Tab container (Smart Suggestion, Chat, Train)
 ├── lib/
-│   ├── openai.ts                 # OpenAI utilities
-│   ├── supabase.ts               # Supabase client
-│   ├── store.ts                  # Zustand state management
-│   ├── language-detector.ts      # Language detection logic
-│   └── utils.ts                  # Utility functions
+│   ├── openai.ts                 # OpenAI utilities (embeddings + chat)
+│   ├── supabase.ts               # Supabase client configuration
+│   ├── store.ts                  # Zustand state management with persistence
+│   ├── language-detector.ts      # Multi-language detection (EN, ZH, KO)
+│   └── utils.ts                  # Utility functions (cn helper)
 ├── types/
 │   └── supabase.ts               # Database type definitions
 ├── supabase/
-│   ├── schema.sql                # Database schema
-│   └── migrations/               # Database migrations
+│   ├── schema.sql                # Complete database schema
+│   ├── fix-dimensions.sql        # Vector dimension fixes
+│   └── migrations/
+│       └── 001_create_chunks_table.sql
+├── .env.local                    # Environment variables (not in git)
 ├── .env.example                  # Environment variables template
-├── tailwind.config.ts            # Tailwind + Magic UI animations
-└── package.json
+├── tailwind.config.ts            # Tailwind + Magic UI animations config
+├── next.config.js                # Next.js configuration
+├── tsconfig.json                 # TypeScript configuration
+├── package.json                  # Dependencies (v1.0.0)
+└── README.md                     # This file
 ```
 
 ## 🔧 API Routes
@@ -332,6 +378,36 @@ Generates phrase suggestions using RAG pattern.
 }
 ```
 
+### POST /api/chat
+
+RAG-powered chat with trained documents.
+
+**Request:**
+```json
+{
+  "message": "What is machine learning?",
+  "history": [
+    {
+      "role": "user",
+      "content": "Previous question"
+    },
+    {
+      "role": "assistant",
+      "content": "Previous answer"
+    }
+  ]
+}
+```
+
+**Response:**
+```json
+{
+  "response": "Machine learning is...",
+  "usedKnowledgeBase": true,
+  "contextChunks": 5
+}
+```
+
 ### POST /api/train
 
 Processes and stores PDF/text content.
@@ -354,17 +430,17 @@ file: [PDF or text file]
 
 ### GET /api/training-stats
 
-Retrieves real-time training statistics.
+Retrieves training statistics.
 
 **Response:**
 ```json
 {
-  "totalChunks": 50,
-  "totalFiles": 2,
-  "totalCharacters": 500700,
-  "files": ["document1.pdf", "document2.pdf"],
-  "lastTrainingDate": "2026-01-29T11:08:00.000Z",
-  "lastTrainingFile": "document2.pdf"
+  "totalChunks": 209,
+  "totalFiles": 3,
+  "totalCharacters": 734700,
+  "files": ["document1.pdf", "document2.pdf", "notes.txt"],
+  "lastTrainingDate": "2026-01-29T11:53:00.000Z",
+  "lastTrainingFile": "notes.txt"
 }
 ```
 
@@ -374,32 +450,47 @@ Retrieves real-time training statistics.
 - Ensure `.env.local` exists and contains valid Supabase credentials
 - Restart the development server after adding variables
 
-### "Failed to query database" or "relation 'public.chunks' does not exist"
+### "Failed to query database" or Table Errors
 - The table is named `chunks_table`, not `chunks`
-- Verify the `match_chunks` function exists in Supabase
+- Verify the `match_chunks` function exists in Supabase SQL Editor
 - Check that the pgvector extension is enabled
 - Ensure the chunks_table has the correct schema with vector(1536)
+- Run the schema.sql file in your Supabase project
+
+### TypeScript Build Errors
+- **Fixed**: Removed syntax errors in training-stats/route.ts (`chunk:any` → `(chunk: any)`)
+- **Fixed**: Added type assertions to prevent Supabase `never` type issues
+- Run `npm run build` to verify all TypeScript errors are resolved
+
+### NumberTicker Animation Not Working
+- **Fixed**: Added unique `key` props based on stat values to force component remount
+- **Fixed**: Set `loadingStats = true` at start of fetch to show 0 before animation
+- Ensure framer-motion@11.15.0 is installed
+- Verify Tailwind config includes Magic UI animations
 
 ### "No text content found in PDF"
 - The PDF might be scanned images without OCR
 - Try a text-based PDF instead
-- Check the pdf-parse library compatibility
+- Check the pdf-parse@1.1.1 library compatibility
 
 ### Suggestions not appearing
-- Make sure you've uploaded at least one PDF for training
+- Make sure you've uploaded at least one PDF or trained text
 - Check that OpenAI API key is valid and has credits
 - Verify the similarity threshold (0.3) isn't too high
 - Check browser console for API errors
+- Ensure OPENAI_API_KEY is set in .env.local
 
-### NumberTicker not animating
-- Ensure framer-motion is installed: `npm install framer-motion`
-- Check that Tailwind config includes Magic UI animations
-- Verify the component receives updated values
+### Chat responses not using trained data
+- Upload training data in the "Train Your AI" tab first
+- Check that chunks are being stored (view training statistics)
+- Look for the green "Knowledge Base" badge on responses
+- Lower the similarity threshold if needed (default: 0.3)
 
-### Realtime statistics not updating
-- Enable realtime on chunks_table in Supabase
-- Check Supabase project has realtime enabled (free tier supported)
-- Falls back to 5-second polling if realtime fails
+### Statistics showing 0 or not updating
+- Check that Supabase credentials are correct
+- Verify chunks_table exists and has data
+- Statistics auto-refresh after uploads with animated counters
+- Check browser console for fetch errors
 
 ## 🎯 Customization
 
@@ -511,29 +602,69 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your-production-anon-key
 OPENAI_API_KEY=your-openai-api-key
 ```
 
-## 📝 License
+## ☕ Support the Project
 
-This project is open source and available under the MIT License.
+If you find this project helpful, consider supporting its development:
+
+<a href="https://buymeacoffee.com/daraboth" target="_blank">
+  <img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" height="50" />
+</a>
+
+Your support helps maintain and improve this open-source project! ❤️
 
 ## 🤝 Contributing
 
-Contributions are welcome! Areas for improvement:
-- Additional language support
-- More Magic UI components
-- Enhanced RAG algorithms
-- User authentication
-- Training data management UI
-- Export/import training data
+Contributions are welcome! This is an **open-source project** available on GitHub.
+
+**Repository**: [https://github.com/DaraBoth/fine-tune-AI-suggestion](https://github.com/DaraBoth/fine-tune-AI-suggestion)
+
+Areas for improvement:
+- Additional language support beyond EN/ZH/KO
+- More Magic UI components and animations
+- Enhanced RAG algorithms and embedding strategies
+- User authentication and authorization
+- Training data man[GitHub](https://github.com/DaraBoth/fine-tune-AI-suggestion/issues)
+- Check the troubleshooting section above
+- Review the API documentation
+- Verify all TypeScript errors are fixed (build should succeed)
+
+## ⭐ Show Your Support
+
+If you like this project, please give it a ⭐ on [GitHub](https://github.com/DaraBoth/fine-tune-AI-suggestion)!
+
+## 📄 License
+
+This project is open source and available under the [MIT License](LICENSE).
+
+---
+
+**Built with ❤️ by [DaraBoth](https://github.com/DaraBoth)**
+
+**TypeFlow AI v1.0.0** - Where Intelligence Meets Beautiful Design
+
+🔗 **Links:**
+- 🌟 [GitHub Repository](https://github.com/DaraBoth/fine-tune-AI-suggestion)
+- ☕ [Buy Me a Coffee](https://buymeacoffee.com/daraboth)re`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Requestdata functionality
+- Advanced chat features (streaming responses, context window management)
+- Performance optimizations for large datasets
+- Mobile-responsive improvements
+- Dark/light theme toggle
 
 ## 📧 Support
 
 If you encounter any issues or have questions:
 - Open an issue on GitHub
-- Check the troubleshooting section
+- Check the troubleshooting section above
 - Review the API documentation
+- Verify all TypeScript errors are fixed (build should succeed)
 
 ---
 
-Built with ❤️ using Next.js, Supabase, OpenAI, and Magic UI
+**Built with ❤️ using Next.js 15, Supabase, OpenAI, and Magic UI**
 
-**TypeFlow AI** - Where Intelligence Meets Beautiful Design
+**TypeFlow AI v1.0.0** - Where Intelligence Meets Beautiful Design
+
+*Last Updated: January 29, 2026*
