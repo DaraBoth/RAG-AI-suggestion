@@ -353,53 +353,18 @@ export default function TrainingTab() {
     }
   }, [])
 
-  // Set up Supabase real-time subscription with fallback
+  // Set up polling to refresh stats and files periodically
   useEffect(() => {
     fetchStats() // Initial fetch
     fetchTrainedFiles() // Initial fetch of trained files
 
-    try {
-      // Try to use Supabase real-time subscription
-      const { supabase } = require('@/lib/supabase')
-      
-      const channel = supabase
-        .channel('chunks_changes')
-        .on(
-          'postgres_changes',
-          {
-            event: '*', // Listen to all events (INSERT, UPDATE, DELETE)
-            schema: 'public',
-            table: 'chunks_table'
-          },
-          (payload: any) => {
-            console.log('Real-time update detected:', payload)
-            // Refresh both stats and file list when any change occurs
-            fetchStats()
-            fetchTrainedFiles()
-          }
-        )
-        .subscribe((status: string) => {
-          if (status === 'SUBSCRIBED') {
-            console.log('Real-time subscription active for training stats')
-          } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
-            console.log('Real-time subscription failed, falling back to polling')
-          }
-        })
+    // Poll every 10 seconds to check for updates
+    const interval = setInterval(() => {
+      fetchStats()
+      fetchTrainedFiles()
+    }, 10000)
 
-      // Cleanup subscription on unmount
-      return () => {
-        supabase.removeChannel(channel)
-      }
-    } catch (error) {
-      console.log('Real-time not available, using polling fallback:', error)
-      // Fallback to polling if real-time fails
-      const interval = setInterval(() => {
-        fetchStats()
-        fetchTrainedFiles()
-      }, 5000) // Poll every 5 seconds as fallback
-
-      return () => clearInterval(interval)
-    }
+    return () => clearInterval(interval)
   }, [fetchStats, fetchTrainedFiles])
 
   // Immediate refresh after successful upload
