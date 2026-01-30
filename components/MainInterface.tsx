@@ -14,14 +14,14 @@ export default function MainInterface() {
       <div className="mb-12 sm:mb-20 text-center relative">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-blue-500/10 blur-[100px] pointer-events-none rounded-full" />
 
-        <div className="relative inline-block mb-6 animate-float">
+        <div className="relative inline-block mb-6 animate-float h-20 w-20 sm:h-24 sm:w-24 rounded-2xl border border-white/20 shadow-2xl glass-morphism overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-tr from-blue-500 via-purple-500 to-teal-500 blur-2xl opacity-20" />
           <Image
             src="/icon.png"
             alt="TypeFlow AI Logo"
-            width={100}
-            height={100}
-            className="relative mx-auto h-20 w-20 sm:h-24 sm:w-24 rounded-2xl border border-white/20 shadow-2xl glass-morphism p-1"
+            width={120}
+            height={120}
+            className="relative mx-auto h-full w-full object-cover"
           />
         </div>
 

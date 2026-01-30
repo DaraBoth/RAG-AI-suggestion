@@ -943,10 +943,10 @@ export default function TrainingTab() {
                 {/* AI Core */}
                 <div
                   ref={knowledgeBrainRef}
-                  className="z-20 relative flex h-20 w-20 sm:h-24 sm:w-24 items-center justify-center rounded-full border border-primary/30 bg-black glass-morphism shadow-[0_0_40px_-10px_rgba(59,130,246,0.3)]"
+                  className="z-20 relative flex h-20 w-20 sm:h-24 sm:w-24 items-center justify-center rounded-full border border-primary/30 bg-black glass-morphism shadow-[0_0_40px_-10px_rgba(59,130,246,0.3)] overflow-hidden"
                 >
                   <div className="absolute inset-0 rounded-full animate-pulse bg-primary/5" />
-                  <Image src="/icon.png" alt="AI Brain" width={100} height={100} className="relative z-30 h-12 w-12 sm:h-16 sm:w-16 object-contain" />
+                  <Image src="/icon.png" alt="AI Brain" width={120} height={120} className="relative z-30 h-full w-full object-cover" />
                   <div className="absolute -bottom-6 text-[10px] font-bold text-primary/80 uppercase tracking-tighter">AI Core</div>
                 </div>
 
@@ -969,9 +969,9 @@ export default function TrainingTab() {
                       >
                         <div
                           ref={(el) => { if (el) knowledgeFileRefs.current[file.filename] = { current: el } as any }}
-                          className="p-1 rounded-lg border border-white/10 glass-morphism shadow-lg bg-black/40 overflow-hidden h-12 w-12 sm:h-16 sm:w-16 flex items-center justify-center"
+                          className="rounded-lg border border-white/10 glass-morphism shadow-lg bg-black/40 overflow-hidden h-12 w-12 sm:h-16 sm:w-16 flex items-center justify-center"
                         >
-                          <Image src="/file-icon.png" alt="File" width={40} height={40} className="w-full h-full object-cover transform scale-125" />
+                          <Image src="/file-icon.png" alt="File" width={64} height={64} className="w-full h-full object-cover transform scale-110" />
                         </div>
                       </div>
                     )

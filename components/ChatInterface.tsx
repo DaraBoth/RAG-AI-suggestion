@@ -210,9 +210,9 @@ export default function ChatInterface() {
                       {message.role === 'assistant' && (
                         <div
                           ref={botIconRef}
-                          className="flex h-8 w-8 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 border border-primary/20 relative"
+                          className="flex h-8 w-8 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 border border-primary/20 relative overflow-hidden"
                         >
-                          <Image src="/icon.png" alt="Bot" width={24} height={24} className="h-5 w-5 sm:h-6 sm:w-6 object-contain" />
+                          <Image src="/icon.png" alt="Bot" width={32} height={32} className="relative z-30 h-full w-full object-cover" />
                         </div>
                       )}
 
