@@ -242,6 +242,39 @@ export default function TrainingTab() {
 
   // View file content
   const handleViewFile = useCallback(async (filename: string) => {
+    // Ask for admin password
+    const password = prompt('🔒 Security Check\n\nEnter admin password to view this file:')
+    
+    if (!password) {
+      return // User cancelled
+    }
+
+    const toastId = toast.loading('Verifying password...', {
+      description: 'Please wait',
+    })
+
+    // Verify password first
+    try {
+      const isValid = await verifyAdminPassword(password)
+      
+      if (!isValid) {
+        toast.error('Access Denied', {
+          id: toastId,
+          description: 'Invalid admin password. Access cancelled.',
+        })
+        return
+      }
+      
+      // Close verification toast
+      toast.dismiss(toastId)
+    } catch (error) {
+      toast.error('Verification Failed', {
+        id: toastId,
+        description: 'Could not verify password. Please try again.',
+      })
+      return
+    }
+
     setLoadingView(true)
     try {
       const data = await viewFileContent(filename)
@@ -251,9 +284,15 @@ export default function TrainingTab() {
         content: data.content,
         metadata: {},
       })
+      
+      toast.success('File Loaded', {
+        description: `Viewing ${filename}`,
+      })
     } catch (error) {
       console.error('Failed to view file:', error)
-      alert('❌ Failed to load file content. Please try again.')
+      toast.error('Failed to Load File', {
+        description: 'Could not load file content. Please try again.',
+      })
     } finally {
       setLoadingView(false)
     }
@@ -261,12 +300,56 @@ export default function TrainingTab() {
 
   // Download file content
   const handleDownloadFile = useCallback(async (filename: string) => {
+    // Ask for admin password
+    const password = prompt('🔒 Security Check\n\nEnter admin password to download this file:')
+    
+    if (!password) {
+      return // User cancelled
+    }
+
+    const toastId = toast.loading('Verifying password...', {
+      description: 'Please wait',
+    })
+
+    // Verify password first
+    try {
+      const isValid = await verifyAdminPassword(password)
+      
+      if (!isValid) {
+        toast.error('Access Denied', {
+          id: toastId,
+          description: 'Invalid admin password. Download cancelled.',
+        })
+        return
+      }
+      
+      // Update toast to show download progress
+      toast.loading(`Downloading ${filename}...`, {
+        id: toastId,
+        description: 'Preparing file for download',
+      })
+    } catch (error) {
+      toast.error('Verification Failed', {
+        id: toastId,
+        description: 'Could not verify password. Please try again.',
+      })
+      return
+    }
+
     try {
       const blob = await downloadFile(filename)
       triggerFileDownload(blob, filename)
+      
+      toast.success('Download Started', {
+        id: toastId,
+        description: `${filename} is being downloaded`,
+      })
     } catch (error) {
       console.error('Failed to download file:', error)
-      alert('❌ Failed to download file. Please try again.')
+      toast.error('Download Failed', {
+        id: toastId,
+        description: 'Could not download file. Please try again.',
+      })
     }
   }, [])
 
