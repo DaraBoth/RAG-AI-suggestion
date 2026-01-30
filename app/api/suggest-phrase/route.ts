@@ -38,8 +38,8 @@ export async function POST(request: NextRequest) {
     // Query Supabase for similar chunks using the match_chunks function
     const { data, error }:{data: any, error: any} = await supabase.rpc('match_chunks' as any, {
       query_embedding: embedding,
-      match_threshold: 0.2, // Lowered threshold for better recall of trained data
-      match_count: 5, // Reduced from 10 for faster response
+      match_threshold: 0.15, // Lower threshold for more context
+      match_count: 10, // Increased for better pattern recognition
     } as any)
 
     console.log(`[Phrase Suggestion] Found ${data?.length || 0} matches from trained data`)
@@ -90,13 +90,13 @@ export async function POST(request: NextRequest) {
     console.log('Using AI Agent with RAG - Retrieved chunks:', matches.length)
     
     try {
-      // Pass only top 3 context chunks to AI for faster processing
-      const contextChunks = matches.slice(0, 3).map(m => m.content)
+      // Pass top 5 context chunks to AI for better pattern recognition
+      const contextChunks = matches.slice(0, 5).map(m => m.content)
       const aiSuggestion = await generateSmartPhraseSuggestion(text, contextChunks)
 
       // Also try to extract direct suggestions from top matches as alternatives
       const directSuggestions = matches
-        .slice(0, 2) // Only use top 2 matches for faster processing
+        .slice(0, 4) // Use top 4 matches for better variety
         .map(match => {
           const suggestion = generatePhraseSuggestionFromContent(text, match.content)
           return {
@@ -169,7 +169,7 @@ export async function POST(request: NextRequest) {
 
 /**
  * Generate a phrase suggestion based on user input and matched content
- * Returns only the completion part (not including what user already typed)
+ * Intelligently predicts what the user is likely to type next
  */
 function generatePhraseSuggestionFromContent(userInput: string, matchedContent: string): string {
   const input = userInput.trim()
@@ -180,46 +180,88 @@ function generatePhraseSuggestionFromContent(userInput: string, matchedContent: 
   const lastWord = inputWords[inputWords.length - 1]
   const lastTwoWords = inputWords.slice(-2).join(' ')
   const lastThreeWords = inputWords.slice(-3).join(' ')
+  const lastFourWords = inputWords.slice(-4).join(' ')
 
-  // Strategy 1: Find the last word(s) in the content and return what comes after
-  // Try matching with last 3 words, then 2 words, then 1 word
-  for (const searchPhrase of [lastThreeWords, lastTwoWords, lastWord]) {
-    if (!searchPhrase) continue
+  // Strategy 1: Find exact phrase matches and return what comes after
+  // Try matching with last 4, 3, 2, then 1 word for best context
+  for (const searchPhrase of [lastFourWords, lastThreeWords, lastTwoWords, lastWord]) {
+    if (!searchPhrase || searchPhrase.length < 2) continue
     
     const searchLower = searchPhrase.toLowerCase()
     const contentLower = content.toLowerCase()
     
-    const index = contentLower.indexOf(searchLower)
+    // Find all occurrences of the phrase
+    let index = contentLower.indexOf(searchLower)
+    
     if (index !== -1) {
-      // Found the phrase, return what comes after it
+      // Found the phrase, extract what comes after
       const afterIndex = index + searchPhrase.length
-      const continuation = content.substring(afterIndex).trim()
+      let continuation = content.substring(afterIndex).trim()
       
-      // Remove leading punctuation if any
-      const cleanContinuation = continuation.replace(/^[.,;:!?]\s*/, '')
+      // Remove leading punctuation but keep it if it's part of the sentence
+      continuation = continuation.replace(/^[.,;:!?]\s*/, '')
       
-      if (cleanContinuation.length > 0) {
-        return cleanContinuation
+      // Get up to 15 words or until sentence end
+      const words = continuation.split(/\s+/)
+      const maxWords = 15
+      let result = words.slice(0, maxWords).join(' ')
+      
+      // If we have a natural sentence ending, cut there
+      const sentenceEnd = result.match(/^[^.!?]*[.!?]/)
+      if (sentenceEnd) {
+        result = sentenceEnd[0]
+      }
+      
+      if (result.length > 3) {
+        return result
       }
     }
   }
 
-  // Strategy 2: If content is a complete sentence/phrase, check if it extends user input
-  if (content.toLowerCase().includes(input.toLowerCase())) {
-    const index = content.toLowerCase().indexOf(input.toLowerCase())
-    if (index !== -1) {
-      const continuation = content.substring(index + input.length).trim()
-      const cleanContinuation = continuation.replace(/^[.,;:!?]\s*/, '')
-      if (cleanContinuation.length > 0) {
-        return cleanContinuation
+  // Strategy 2: Semantic matching - if content contains similar concepts
+  // Look for the input within the content and extract continuation
+  const contentWords = content.toLowerCase().split(/\s+/)
+  const inputWordsLower = inputWords.map(w => w.toLowerCase())
+  
+  // Find where the input context appears in content
+  for (let i = 0; i < contentWords.length - inputWords.length; i++) {
+    const matchCount = inputWordsLower.filter((word, idx) => 
+      contentWords[i + idx] === word
+    ).length
+    
+    // If we have a good match (50%+ words match)
+    if (matchCount >= Math.max(2, inputWords.length * 0.5)) {
+      const startIdx = content.toLowerCase().indexOf(contentWords.slice(i, i + inputWords.length).join(' '))
+      if (startIdx !== -1) {
+        const continuation = content.substring(startIdx + input.length).trim()
+        const cleaned = continuation.replace(/^[.,;:!?]\s*/, '')
+        const words = cleaned.split(/\s+/).slice(0, 15).join(' ')
+        if (words.length > 3) {
+          return words
+        }
       }
     }
   }
 
-  // Strategy 3: Return the entire content if it's a short phrase/word (might be a continuation)
-  // But only if it doesn't start with what user already typed
-  if (content.length < 50 && !content.toLowerCase().startsWith(input.toLowerCase())) {
-    return content
+  // Strategy 3: Pattern-based prediction
+  // If content represents a common phrase pattern that extends user input
+  if (content.length > input.length && content.toLowerCase().startsWith(input.toLowerCase())) {
+    const continuation = content.substring(input.length).trim()
+    const cleaned = continuation.replace(/^[.,;:!?]\s*/, '')
+    const words = cleaned.split(/\s+/).slice(0, 15).join(' ')
+    if (words.length > 3) {
+      return words
+    }
+  }
+
+  // Strategy 4: Return short relevant phrases from content
+  // If content is a complete, relevant phrase that could follow the input
+  if (content.length < 100 && content.length > 5) {
+    // Check if it could be a natural continuation (doesn't repeat the input)
+    if (!content.toLowerCase().includes(input.toLowerCase()) || 
+        content.toLowerCase().indexOf(input.toLowerCase()) > 5) {
+      return content
+    }
   }
 
   // No good match found

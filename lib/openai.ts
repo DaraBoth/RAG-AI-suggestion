@@ -98,15 +98,31 @@ export async function generatePhraseSuggestion(userInput: string): Promise<strin
     messages: [
       {
         role: 'system',
-        content: 'You are an autocomplete assistant. Your ONLY job is to continue the user\'s sentence, NOT to respond to it. DO NOT greet, chat, or answer questions. If user types "Hello", continue with what might come next like "there" or "everyone", NOT respond to the greeting. Return ONLY the next 3-10 words to continue their sentence.',
+        content: `You are an intelligent predictive text assistant. Predict what the user is most likely to type next.
+
+Rules:
+1. PREDICT the most natural continuation based on common patterns
+2. Analyze the user's intent and tone
+3. Don't respond to questions - predict what they'll say next
+4. Don't greet back - predict their next words
+5. Return 3-15 words of likely continuation
+6. Be context-aware and intelligent
+7. Match the language and formality level
+
+Examples:
+- "I need help with" → "my project deadline" or "understanding this concept"
+- "Can you please" → "send me the details" or "clarify this point"
+- "Looking forward to" → "hearing from you" or "our meeting tomorrow"`,
       },
       {
         role: 'user',
-        content: `Continue this text (do not respond to it, just continue): "${userInput}"`,
+        content: `Predict what naturally comes next: "${userInput}"
+
+Return only the predicted continuation (3-15 words).`,
       },
     ],
-    max_tokens: 50,
-    temperature: 0.5,
+    max_tokens: 80,
+    temperature: 0.4,
   })
 
   let result = response.choices[0]?.message?.content?.trim() || ''
@@ -183,29 +199,35 @@ export async function generateSmartPhraseSuggestion(
     messages: [
       {
         role: 'system',
-        content: `You are an autocomplete assistant. Your ONLY job is to CONTINUE the user's text, NOT respond to it.
+        content: `You are an intelligent predictive text assistant. Your job is to PREDICT and CONTINUE what the user is most likely to type next.
 
-Rules:
-1. DO NOT respond conversationally (no "Hello!", "Sure!", "I can help")
-2. DO NOT answer questions - just continue the sentence
-3. If user types "Hello", continue with "there", "everyone", "world" - NOT "Hello! How can I help?"
-4. Use context from knowledge base to predict what comes NEXT
-5. Return ONLY 3-10 words that continue the sentence
-6. Match the language and style of the input
-7. This is AUTOCOMPLETE, not chat`,
+Core Rules:
+1. PREDICT what comes next naturally - don't respond conversationally
+2. Analyze the context from knowledge base to understand patterns and likely continuations
+3. If user types "I want to", predict common actions: "learn more", "discuss this", "schedule a meeting"
+4. If user types "How can I", predict based on context: "improve", "solve", "implement"
+5. Match the language, tone, and domain from the context
+6. Return 3-15 words of the most likely continuation
+7. Use knowledge base patterns to make intelligent predictions
+8. This is PREDICTIVE AUTOCOMPLETE - anticipate user intent
+
+Examples:
+- Context about meetings → predict meeting-related phrases
+- Context about technical docs → predict technical terminology
+- Context about greetings → predict polite continuations`,
       },
       {
         role: 'user',
-        content: `The user is typing: "${userInput}"
+        content: `User is typing: "${userInput}"
 
-Retrieved context from knowledge base:
+Knowledge base context (learn patterns from this):
 ${contextText}
 
-Continue (don't respond to) the text. Return only what comes next.`,
+Based on the context patterns, predict the most likely 3-15 words that would naturally continue this text. Return ONLY the prediction, nothing else.`,
       },
     ],
-    max_tokens: 50,
-    temperature: 0.3,
+    max_tokens: 80,
+    temperature: 0.4,
   })
 
   let result = response.choices[0]?.message?.content?.trim() || ''
