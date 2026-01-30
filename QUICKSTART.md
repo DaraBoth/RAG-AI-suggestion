@@ -8,7 +8,7 @@ Follow these steps to get your AI Autocomplete running in minutes.
 npm install
 ```
 
-## Step 2: Set Up Supabase
+## Step 2: Set Up Supabase (Required)
 
 1. **Create a Supabase account** at [https://supabase.com](https://supabase.com)
 2. **Create a new project**
@@ -88,15 +88,42 @@ Open [http://localhost:3000](http://localhost:3000)
 ## Step 6: Train Your AI
 
 1. Go to the **Training** tab
-2. Upload a PDF file
+2. Upload a PDF file or use the "Teach AI" button in Autocomplete tab
 3. Wait for processing (you'll see a success message)
+4. All manual text training goes into a single `manual-training.txt` file
 
 ## Step 7: Test Suggestions
 
-1. Go to the **Chat** tab
+1. Go to the **Autocomplete** tab
 2. Start typing
-3. After 500ms, you'll see ghost text suggestions
-4. Press **Tab** to accept!
+3. After 500ms, you'll see suggestions in a dropdown
+4. Press **Tab/Enter** or number keys (1-5) to accept!
+
+## Step 8: (Optional) Enable Public API
+
+To allow third-party developers to use your AI:
+
+1. Run API migration in Supabase SQL Editor:
+   ```sql
+   -- Copy contents from: supabase/migrations/003_create_api_keys_table.sql
+   ```
+
+2. Generate an API key:
+   ```bash
+   curl -X POST http://localhost:3000/api/keys/generate \
+     -H "Content-Type: application/json" \
+     -d '{"name": "My API Key"}'
+   ```
+
+3. Test the API:
+   ```bash
+   curl -X POST http://localhost:3000/api/public/complete-word \
+     -H "Authorization: Bearer YOUR_API_KEY" \
+     -H "Content-Type: application/json" \
+     -d '{"text": "Hello", "incompleteWord": "wor"}'
+   ```
+
+See [API_SETUP.md](API_SETUP.md) and [API_DOCUMENTATION.md](API_DOCUMENTATION.md) for details.
 
 ---
 

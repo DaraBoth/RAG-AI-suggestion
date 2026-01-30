@@ -28,14 +28,24 @@ A cutting-edge Next.js application featuring AI-powered autocomplete with Retrie
 - **Persistent Chat History**: Chat state saved across tab switches with Zustand
 - **Auto-scroll**: Smooth scrolling to latest messages
 
+### 🔐 Public API System
+- **Secure API Keys**: SHA-256 hashed keys with Bearer token authentication
+- **Rate Limiting**: Configurable request limits per API key (default: 1000/hour)
+- **Access Control**: Endpoint-level permissions and optional key expiration
+- **Usage Analytics**: Track all API requests with detailed logs
+- **Full Documentation**: Complete API docs with code examples in multiple languages
+
 ### 🎨 Magic UI Components
 - **ShimmerButton**: Animated gradient buttons with shimmer effects
 - **NumberTicker**: Smooth counting animations starting from 0 with unique keys for re-animation
 - **BorderBeam**: Animated border effects on cards with staggered delays
 - **Sparkles**: Dynamic sparkle animations for headings
+- **Toast Notifications**: Beautiful stacking toasts with loading states for file operations
 
 ### 📊 Training & Analytics
 - **PDF & Text Training**: Upload PDF files or train directly from input text
+- **Consolidated Manual Training**: All text-based training saved to single file
+- **File Management**: Multi-select delete with confirmation and toast notifications
 - **Real-time Statistics**: Live updates with animated number counters
 - **Training Dashboard**: Track total chunks, files trained, characters processed, and last training date
 - **Persistent State**: Training status preserved across tab switches with Zustand
@@ -68,6 +78,7 @@ Before you begin, ensure you have:
 1. **Node.js** (v18 or higher)
 2. **Supabase Account** (free tier works)
 3. **OpenAI API Key** (with access to embeddings API)
+4. **(Optional)** For Public API: Run API tables migration for third-party access
 
 ## 🛠️ Setup Instructions
 
@@ -84,7 +95,7 @@ npm install
 
 ### 2. Set Up Supabase Database
 
-#### Create the chunks_table
+#### Create the chunks_table (Required)
 
 Run the following SQL in your Supabase SQL Editor:
 
@@ -137,6 +148,24 @@ $$;
 ```
 
 #### Enable Supabase Realtime
+
+Enable realtime updates for the chunks_table:
+
+1. Go to **Database → Replication** in Supabase Dashboard
+2. Enable replication for `chunks_table`
+
+#### (Optional) Set Up Public API Tables
+
+If you want to enable the public API for third-party developers:
+
+```bash
+# Run the API migration in Supabase SQL Editor
+# File: supabase/migrations/003_create_api_keys_table.sql
+```
+
+This creates `public_api_keys` and `public_api_usage_logs` tables for secure API access.
+
+See [API_SETUP.md](API_SETUP.md) for complete API setup instructions.
 
 Enable realtime for the chunks_table:
 
@@ -191,11 +220,29 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
    - Store chunks with metadata in Supabase
 4. Watch the statistics update with animated number counters
 
-#### Method 2: Train from Input Text
+#### Method 2: Train from Input Text (Consolidated)
 1. Type or paste text in the **Smart Suggestion** input area
 2. Click the **Teach AI** button (purple gradient)
-3. The text will be processed and added to your training data
+3. The text will be:
+   - Added to a single `manual-training.txt` file
+   - Appended to any existing manual training content
+   - Re-chunked and re-embedded automatically
 4. Perfect for quick training with specific phrases
+5. All manual training appears as one file in your training list
+
+### Managing Trained Files
+
+1. View all trained files in the **Training** tab
+2. Each file shows:
+   - File name, chunk count, and last updated date
+   - View, Download, and Delete buttons
+3. **Multi-Select Delete**:
+   - Check boxes to select multiple files
+   - Click "Delete (N)" button to remove selected files
+   - Each deletion shows a toast notification with progress
+   - Toasts stack when deleting multiple files
+4. **View File**: Click eye icon to preview file content
+5. **Download File**: Click download icon to save original file
 
 ### Using Smart Suggestions
 
@@ -579,11 +626,31 @@ This approach prevents raw chunk display (common in basic vector search) and pro
 ## 🔒 Security Notes
 
 - API keys are stored in environment variables (never commit `.env.local`)
-- Supabase Row Level Security (RLS) is not enabled - **add it for production**
+- Supabase Row Level Security (RLS) is enabled for API key tables
 - File upload size is limited by Next.js (adjust in `next.config.js` if needed)
-- No authentication required - **add user auth for production use**
+- No user authentication required for basic features - **add auth for production**
 - OpenAI API calls are made server-side to protect API keys
-- Consider rate limiting API routes for production
+- Public API endpoints use Bearer token authentication
+- API keys are hashed with SHA-256 before storage
+- Rate limiting enabled for API endpoints (configurable per key)
+- Consider implementing user authentication for production use
+
+## 🌐 Public API
+
+TypeFlow AI includes a complete public API system for third-party integration:
+
+- **Secure Authentication**: Bearer token with SHA-256 hashed API keys
+- **Rate Limiting**: Configurable per-key limits (default: 1000 requests/hour)
+- **Access Control**: Endpoint-level permissions and key expiration
+- **Usage Analytics**: Comprehensive logging and monitoring
+- **Full Documentation**: See [API_DOCUMENTATION.md](API_DOCUMENTATION.md)
+
+### Quick API Setup
+
+1. Run the API migration: `supabase/migrations/003_create_api_keys_table.sql`
+2. Generate an API key: `POST /api/keys/generate`
+3. Use the key: `Authorization: Bearer YOUR_API_KEY`
+4. See [API_SETUP.md](API_SETUP.md) for complete instructions
 
 ## 🚀 Deployment
 
@@ -616,17 +683,17 @@ Your support helps maintain and improve this open-source project! ❤️
 
 Contributions are welcome! This is an **open-source project** available on GitHub.
 
+Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on our code of conduct and the process for submitting pull requests.
+
 **Repository**: [https://github.com/DaraBoth/fine-tune-AI-suggestion](https://github.com/DaraBoth/fine-tune-AI-suggestion)
 
-Areas for improvement:
-- Additional language support beyond EN/ZH/KO
-- More Magic UI components and animations
-- Enhanced RAG algorithms and embedding strategies
-- User authentication and authorization
-- Training data man[GitHub](https://github.com/DaraBoth/fine-tune-AI-suggestion/issues)
-- Check the troubleshooting section above
-- Review the API documentation
-- Verify all TypeScript errors are fixed (build should succeed)
+## 📧 Support
+
+If you encounter any issues or have questions:
+- 📖 Check [QUICKSTART.md](QUICKSTART.md) for setup help
+- 🔌 Review [API_DOCUMENTATION.md](API_DOCUMENTATION.md) for API usage
+- 🐛 Open an issue on [GitHub](https://github.com/DaraBoth/fine-tune-AI-suggestion/issues)
+- 💬 Start a discussion for general questions
 
 ## ⭐ Show Your Support
 
@@ -644,13 +711,11 @@ This project is open source and available under the [MIT License](LICENSE).
 
 🔗 **Links:**
 - 🌟 [GitHub Repository](https://github.com/DaraBoth/fine-tune-AI-suggestion)
-- ☕ [Buy Me a Coffee](https://buymeacoffee.com/daraboth)re`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Requestdata functionality
-- Advanced chat features (streaming responses, context window management)
-- Performance optimizations for large datasets
-- Mobile-responsive improvements
+- ☕ [Buy Me a Coffee](https://buymeacoffee.com/daraboth)
+- 📚 [Quick Start Guide](QUICKSTART.md)
+- 🔌 [API Documentation](API_DOCUMENTATION.md)
+
+*Last Updated: January 30, 2026*
 - Dark/light theme toggle
 
 ## 📧 Support
