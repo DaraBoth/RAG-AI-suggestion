@@ -64,7 +64,7 @@ export const AnimatedBeam = ({
 
     useEffect(() => {
         const updatePath = () => {
-            if (containerRef.current && fromRef.current && toRef.current) {
+            if (containerRef?.current && fromRef?.current && toRef?.current) {
                 const containerRect = containerRef.current.getBoundingClientRect();
                 const rectA = fromRef.current.getBoundingClientRect();
                 const rectB = toRef.current.getBoundingClientRect();
@@ -94,7 +94,7 @@ export const AnimatedBeam = ({
             }
         });
 
-        if (containerRef.current) {
+        if (containerRef?.current) {
             resizeObserver.observe(containerRef.current);
         }
 

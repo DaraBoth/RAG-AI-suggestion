@@ -59,11 +59,26 @@ export default function TrainingTab() {
   const [chunkStrategy, setChunkStrategy] = useState<'word' | 'sentence' | 'smart'>('smart')
   const [activeFiles, setActiveFiles] = useState<ActiveFile[]>([])
 
-  // Refs for Animated Beam
+  // Refs for Animated Beam (Upload)
   const containerRef = useRef<HTMLDivElement>(null)
   const brainRef = useRef<HTMLDivElement>(null)
   const fileRefs = useRef<{ [key: string]: React.RefObject<HTMLDivElement | null> }>({})
   const confettiRef = useRef<any>(null)
+
+  // Knowledge Map Refs
+  const knowledgeContainerRef = useRef<HTMLDivElement>(null)
+  const knowledgeBrainRef = useRef<HTMLDivElement>(null)
+  const knowledgeFileRefs = useRef<{ [key: string]: React.RefObject<HTMLDivElement | null> }>({})
+
+  // Reset stuck state on mount
+  useEffect(() => {
+    if (uploadStatus.status === 'uploading' && activeFiles.length === 0) {
+      setUploadStatus({
+        status: 'idle',
+        message: '',
+      })
+    }
+  }, [uploadStatus.status, activeFiles.length, setUploadStatus])
 
   // Fetch training statistics
   const fetchStats = useCallback(async () => {
@@ -644,8 +659,8 @@ export default function TrainingTab() {
                 onClick={() => setChunkStrategy('word')}
                 disabled={uploadStatus.status === 'uploading'}
                 className={`p-3 rounded-lg border-2 transition-all text-left ${chunkStrategy === 'word'
-                    ? 'border-blue-500 bg-blue-500/20 ring-2 ring-blue-500/50'
-                    : 'border-white/20 hover:border-white/40 hover:bg-white/5'
+                  ? 'border-blue-500 bg-blue-500/20 ring-2 ring-blue-500/50'
+                  : 'border-white/20 hover:border-white/40 hover:bg-white/5'
                   } ${uploadStatus.status === 'uploading' ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
               >
                 <div className="font-medium text-white text-sm">Word by Word</div>
@@ -659,8 +674,8 @@ export default function TrainingTab() {
                 onClick={() => setChunkStrategy('sentence')}
                 disabled={uploadStatus.status === 'uploading'}
                 className={`p-3 rounded-lg border-2 transition-all text-left ${chunkStrategy === 'sentence'
-                    ? 'border-blue-500 bg-blue-500/20 ring-2 ring-blue-500/50'
-                    : 'border-white/20 hover:border-white/40 hover:bg-white/5'
+                  ? 'border-blue-500 bg-blue-500/20 ring-2 ring-blue-500/50'
+                  : 'border-white/20 hover:border-white/40 hover:bg-white/5'
                   } ${uploadStatus.status === 'uploading' ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
               >
                 <div className="font-medium text-white text-sm">Sentence by Sentence</div>
@@ -674,8 +689,8 @@ export default function TrainingTab() {
                 onClick={() => setChunkStrategy('smart')}
                 disabled={uploadStatus.status === 'uploading'}
                 className={`p-3 rounded-lg border-2 transition-all text-left ${chunkStrategy === 'smart'
-                    ? 'border-blue-500 bg-blue-500/20 ring-2 ring-blue-500/50'
-                    : 'border-white/20 hover:border-white/40 hover:bg-white/5'
+                  ? 'border-blue-500 bg-blue-500/20 ring-2 ring-blue-500/50'
+                  : 'border-white/20 hover:border-white/40 hover:bg-white/5'
                   } ${uploadStatus.status === 'uploading' ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
               >
                 <div className="font-medium text-white text-sm">Smart Mode ⭐</div>
@@ -749,8 +764,8 @@ export default function TrainingTab() {
                           }`}>
                           {af.status === 'processing' && <div className="absolute inset-0 rounded-xl animate-ping border border-blue-500/30" />}
                           <FileIcon className={`h-6 w-6 sm:h-8 sm:w-8 ${af.status === 'processing' ? 'text-blue-400 animate-pulse' :
-                              af.status === 'completed' ? 'text-emerald-400' :
-                                af.status === 'error' ? 'text-red-400' : 'text-white/60'
+                            af.status === 'completed' ? 'text-emerald-400' :
+                              af.status === 'error' ? 'text-red-400' : 'text-white/60'
                             }`} />
                         </div>
                         <span className="text-[10px] sm:text-xs text-white/50 max-w-[80px] truncate">{af.name}</span>
@@ -785,8 +800,8 @@ export default function TrainingTab() {
                           }`}>
                           {af.status === 'processing' && <div className="absolute inset-0 rounded-xl animate-ping border border-blue-500/30" />}
                           <FileIcon className={`h-6 w-6 sm:h-8 sm:w-8 ${af.status === 'processing' ? 'text-blue-400 animate-pulse' :
-                              af.status === 'completed' ? 'text-emerald-400' :
-                                af.status === 'error' ? 'text-red-400' : 'text-white/60'
+                            af.status === 'completed' ? 'text-emerald-400' :
+                              af.status === 'error' ? 'text-red-400' : 'text-white/60'
                             }`} />
                         </div>
                         <span className="text-[10px] sm:text-xs text-white/50 max-w-[80px] truncate">{af.name}</span>
@@ -810,11 +825,17 @@ export default function TrainingTab() {
                   </div>
                 </div>
 
-                <div className="absolute bottom-4 left-0 right-0 text-center">
+                <div className="absolute bottom-4 left-0 right-0 text-center flex flex-col items-center gap-2">
                   <div className="flex items-center justify-center gap-2">
                     <Loader2 className="h-4 w-4 animate-spin text-primary" />
                     <p className="text-xs sm:text-sm font-medium text-white/70 italic">{uploadStatus.message}</p>
                   </div>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); resetUpload(); }}
+                    className="text-[10px] text-white/30 hover:text-red-400 transition-colors underline underline-offset-2"
+                  >
+                    Stuck? Cancel & Reset
+                  </button>
                 </div>
               </div>
             )}
@@ -887,6 +908,76 @@ export default function TrainingTab() {
               </div>
             </div>
           </div>
+
+          {/* Trained Files Visualization */}
+          {trainedFiles.length > 0 && (
+            <div className="mt-8 rounded-2xl border border-white/10 bg-black/40 p-1 relative overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-b from-blue-500/5 to-transparent pointer-events-none" />
+              <div ref={knowledgeContainerRef} className="relative h-[280px] sm:h-[350px] w-full flex items-center justify-center overflow-hidden">
+                <Particles className="absolute inset-0 z-0 opacity-30" quantity={20} />
+
+                {/* AI Core */}
+                <div
+                  ref={knowledgeBrainRef}
+                  className="z-20 relative flex h-20 w-20 sm:h-24 sm:w-24 items-center justify-center rounded-full border border-primary/30 bg-black glass-morphism shadow-[0_0_40px_-10px_rgba(59,130,246,0.3)]"
+                >
+                  <div className="absolute inset-0 rounded-full animate-pulse bg-primary/5" />
+                  <Image src="/icon.png" alt="AI Brain" width={48} height={48} className="relative z-30 h-10 w-10 sm:h-12 sm:w-12" />
+                  <div className="absolute -bottom-6 text-[10px] font-bold text-primary/80 uppercase tracking-tighter">AI Core</div>
+                </div>
+
+                {/* Trained Sources */}
+                <div className="absolute inset-0 pointer-events-none">
+                  {/* Position up to 6 representative files in a circle */}
+                  {trainedFiles.slice(0, 6).map((file, idx) => {
+                    const angle = (idx * (360 / Math.min(6, trainedFiles.length))) - 90
+                    const radius = typeof window !== 'undefined' && window.innerWidth < 640 ? 100 : 130
+                    const x = Math.cos(angle * (Math.PI / 180)) * radius
+                    const y = Math.sin(angle * (Math.PI / 180)) * radius
+
+                    return (
+                      <div
+                        key={`vis-${file.filename}`}
+                        style={{
+                          transform: `translate(${x}px, ${y}px)`,
+                        }}
+                        className="absolute left-1/2 top-1/2 -ml-10 -mt-10 flex flex-col items-center gap-1"
+                      >
+                        <div
+                          ref={(el) => { if (el) knowledgeFileRefs.current[file.filename] = { current: el } as any }}
+                          className="p-1 rounded-lg border border-white/10 glass-morphism shadow-lg bg-black/40 overflow-hidden h-12 w-12 sm:h-16 sm:w-16 flex items-center justify-center"
+                        >
+                          <Image src="/file-icon.png" alt="File" width={40} height={40} className="w-full h-full object-cover transform scale-125" />
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+
+                {/* Render Knowledge Beams (Outside transform divs) */}
+                {trainedFiles.slice(0, 6).map((file, idx) => (
+                  <AnimatedBeam
+                    key={`kbeam-${file.filename}`}
+                    containerRef={knowledgeContainerRef}
+                    fromRef={knowledgeFileRefs.current[file.filename]}
+                    toRef={knowledgeBrainRef}
+                    pathColor="rgba(59, 130, 246, 0.2)"
+                    pathWidth={2}
+                    gradientStartColor="#3b82f6"
+                    gradientStopColor="#a855f7"
+                    duration={Math.random() * 2 + 3}
+                    delay={Math.random() * 2}
+                    curvature={idx % 2 === 0 ? 30 : -30}
+                  />
+                ))}
+
+                <div className="absolute top-4 left-4 flex flex-col items-start">
+                  <span className="text-[10px] font-bold text-emerald-400/80 uppercase tracking-widest">Active Knowledge Base</span>
+                  <span className="text-xs text-white/40">{trainedFiles.length} Sources Integrated</span>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Trained Files List */}
           {trainedFiles.length > 0 && (
