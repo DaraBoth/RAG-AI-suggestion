@@ -28,7 +28,14 @@ export async function GET() {
     // Extract unique filenames and count chunks per file
     const fileMap = new Map<string, { filename: string; chunkCount: number; lastUpdated: string }>()
     
-    data?.forEach((chunk: any) => {
+    console.log(`[Trained Files] Processing ${data?.length || 0} chunks`)
+    
+    data?.forEach((chunk: any, index: number) => {
+      // Log first few chunks to debug
+      if (index < 5) {
+        console.log(`[Trained Files] Chunk ${index}:`, JSON.stringify(chunk))
+      }
+      
       const filename = chunk.metadata?.filename
       const uploadedAt = chunk.metadata?.uploaded_at || chunk.metadata?.learned_at
       
@@ -47,8 +54,12 @@ export async function GET() {
             lastUpdated: uploadedAt || new Date().toISOString(),
           })
         }
+      } else {
+        console.log(`[Trained Files] Chunk ${index} has no filename in metadata:`, chunk)
       }
     })
+    
+    console.log('[Trained Files] Unique files found:', Array.from(fileMap.keys()))
 
     // Convert map to array and sort by last updated (most recent first)
     const files = Array.from(fileMap.values()).sort((a, b) => 

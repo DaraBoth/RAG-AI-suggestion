@@ -916,7 +916,7 @@ export default function TrainingTab() {
                   className="z-20 relative flex h-20 w-20 sm:h-24 sm:w-24 items-center justify-center rounded-full border border-primary/30 bg-black glass-morphism shadow-[0_0_40px_-10px_rgba(59,130,246,0.3)]"
                 >
                   <div className="absolute inset-0 rounded-full animate-pulse bg-primary/5" />
-                  <Image src="/icon.png" alt="AI Brain" width={90} height={90} className="relative z-30 h-10 w-10 sm:h-12 sm:w-12" />
+                  <Image src="/icon.png" alt="AI Brain" width={100} height={100} className="relative z-30 h-12 w-12 sm:h-16 sm:w-16 object-contain" />
                   <div className="absolute -bottom-6 text-[10px] font-bold text-primary/80 uppercase tracking-tighter">AI Core</div>
                 </div>
 

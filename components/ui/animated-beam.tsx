@@ -47,20 +47,6 @@ export const AnimatedBeam = ({
     const [path, setPath] = useState("");
     const [svgDimensions, setSvgDimensions] = useState({ width: 0, height: 0 });
 
-    // Calculate the gradient direction
-    const gradientCoordinates = reverse
-        ? {
-            x1: "90%",
-            x2: "10%",
-            y1: "0%",
-            y2: "0%",
-        }
-        : {
-            x1: "10%",
-            x2: "90%",
-            y1: "0%",
-            y2: "0%",
-        };
 
     useEffect(() => {
         const updatePath = () => {
@@ -148,6 +134,11 @@ export const AnimatedBeam = ({
                 <motion.linearGradient
                     id={id}
                     gradientUnits="userSpaceOnUse"
+                    initial={
+                        reverse
+                            ? { x1: "100%", x2: "110%", y1: "0%", y2: "0%" }
+                            : { x1: "0%", x2: "10%", y1: "0%", y2: "0%" }
+                    }
                     animate={
                         reverse
                             ? {
