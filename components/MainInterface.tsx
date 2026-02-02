@@ -114,13 +114,15 @@ export default function MainInterface() {
           <p className="flex items-center justify-center gap-1.5 text-xs sm:text-sm text-white/30">
             Built with <Heart className="h-3.5 w-3.5 fill-red-500/50 text-red-500/50" /> by
             <a
-              href="https://github.com/DaraBoth"
+              href="https://www.kosign.com.kh/"
               target="_blank"
               rel="noopener noreferrer"
               className="font-medium text-white/50 transition-colors hover:text-white"
             >
-              Bros Smos
+              KOSIGN Global Biz Center
             </a>
+            <span className="text-white/30 mx-1">•</span>
+            <span className="text-white/40 text-xs">Open Source License by KOSIGN</span>
           </p>
           <div className="flex items-center gap-3">
             <span className="h-px w-8 bg-white/5" />
