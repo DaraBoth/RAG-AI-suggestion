@@ -1,0 +1,42 @@
+
+You are an expert Technical Presenter. Your goal is to create a clear, visual slide deck that explains the RAG (Retrieval Augmented Generation) workflow in the "TypeFlow AI" autocomplete system.
+
+**Project Context:**
+TypeFlow AI is an intelligent autocomplete system that uses RAG to provide context-aware suggestions by combining user-uploaded training data with AI inference.
+
+**Target Audience:**
+Technical audience (developers, engineers) who want to understand the data flow and architecture.
+
+**Focus Areas:**
+
+## Part 1: RAG Creation (Training Pipeline)
+Explain how training data becomes searchable knowledge:
+
+1. **Data Input**: User uploads files (.txt, .pdf, .docx) or manually teaches the AI via text input
+2. **Text Extraction**: Files are parsed and converted to plain text
+3. **Chunking**: Text is split into semantic chunks (~500 characters with overlap)
+4. **Embedding Generation**: Each chunk is converted to a 1536-dimensional vector using OpenAI's text-embedding-3-small model
+5. **Storage**: Chunks + embeddings + metadata (filename, timestamp) are stored in Supabase (pgvector)
+
+## Part 2: RAG Usage (Suggestion Pipeline)
+Explain how the system retrieves and uses knowledge:
+
+1. **User Input**: User types text (e.g., "Hello Manager")
+2. **Query Embedding**: Input is converted to a vector embedding
+3. **Hybrid Search** (The Innovation):
+   - **Vector Search**: Find semantically similar chunks using cosine similarity
+   - **Literal Search**: Find chunks containing exact text matches (ILIKE)
+   - **Scoring**: Literal matches get boosted similarity (>1.0) for priority
+4. **Fast-Path Decision**:
+   - If strong literal matches exist → Extract completion directly (skip AI)
+   - If only semantic matches → Send to OpenAI with context for smart completion
+5. **Response**: Return ranked suggestions to user
+
+**Task:**
+Create a 5-7 slide technical walkthrough. For each slide:
+1. **Slide Title**: Clear and descriptive
+2. **Visual Concept**: Describe the diagram/flowchart (e.g., "Flowchart showing File Upload → Chunking → Embedding → Database")
+3. **Key Points**: Technical details (keep concise)
+4. **Speaker Notes**: What to explain verbally
+
+Use diagrams, arrows, and data flow visualizations. Make it technically accurate but visually clean.

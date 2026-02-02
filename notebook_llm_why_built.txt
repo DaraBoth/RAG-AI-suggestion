@@ -1,0 +1,48 @@
+
+You are an expert Storyteller and Presentation Designer. Your goal is to create compelling slides that explain WHY the "TypeFlow AI" project was built - focusing on the real-world problem it solves.
+
+**The Problem Statement:**
+
+## The Challenge: Multilingual Typing Barriers
+
+When users type in Korean, Japanese, Chinese, or other non-English languages, they face unique challenges:
+
+1. **Spelling/Grammar Mistakes**: 
+   - Complex character systems make typos more common
+   - Autocorrect often fails for non-English languages
+   - Embarrassing mistakes in professional communication
+
+2. **Writer's Block / Lost in Translation**:
+   - Users know what they want to say in their mind, but struggle to find the right words
+   - Formal vs. casual tone confusion (especially in Korean with honorifics)
+   - Long pauses between sentences while thinking
+
+3. **Lack of Confidence**:
+   - Fear of making mistakes leads to hesitation
+   - Switching between languages (Korean ↔ English) slows down workflow
+   - No smart suggestions that understand YOUR specific context (company jargon, names, etc.)
+
+## Existing Solutions Fall Short:
+
+- **Generic autocomplete** (Google, Microsoft): Works for English, poor for other languages
+- **Translation tools**: Not helpful when you're already typing in your native language
+- **Spell checkers**: Only fix mistakes after you make them, don't help you write
+
+## The Vision: TypeFlow AI
+
+An intelligent autocomplete assistant that:
+- **Learns from YOUR writing**: Upload company documents, past emails, common phrases
+- **Understands context**: Knows the difference between "안녕하세요 과장님" vs "안녕하세요 친구"
+- **Provides instant, confident suggestions**: Type smoothly without second-guessing yourself
+- **Works in ANY language**: Korean, English, or mixed - it adapts
+
+**Result**: Users type faster, make fewer mistakes, and communicate with confidence.
+
+**Task:**
+Create 3-5 slides focusing on the "WHY" narrative. For each slide:
+1. **Slide Title**: Emotionally resonant (e.g., "The Hidden Cost of Language Barriers")
+2. **Visual Concept**: Relatable scenarios (e.g., "Person staring at blank screen, frustrated")
+3. **Key Points**: Real user pain points
+4. **Speaker Notes**: Personal story or statistics to make it relatable
+
+Make it human-centered and emotionally compelling. This is about people, not just technology.
