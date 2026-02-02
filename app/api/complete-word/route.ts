@@ -34,11 +34,12 @@ export async function POST(request: NextRequest) {
     console.log(`[Word Completion] Query: "${text}", Incomplete word: "${incompleteWord}"`)
     console.log(`[Word Completion] Generated query embedding with ${embedding.length} dimensions`)
 
-    // Query Supabase for similar chunks using the match_chunks function
-    const { data, error } = await supabase.rpc('match_chunks' as any, {
+    // Query Supabase for similar chunks using high-speed hybrid search
+    const { data: qData, error } = await supabase.rpc('match_chunks_hybrid' as any, {
       query_embedding: embedding,
-      match_threshold: 0.2, // Lowered threshold for better recall of trained data
-      match_count: 5, // Reduced from 10 for faster response
+      literal_query: incompleteWord,
+      match_threshold: 0.2,
+      match_count: 5,
     } as any)
 
     if (error) {
@@ -49,109 +50,108 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const matches = data as any[]
-
-    console.log(`[Word Completion] Found ${matches?.length || 0} matches from trained data`)
-    if (matches && matches.length > 0) {
-      console.log(`[Word Completion] Top match similarity: ${matches[0].similarity}, content preview: ${matches[0].content.substring(0, 100)}...`)
+    interface HybridMatch {
+      id: number
+      content: string
+      metadata: Record<string, unknown>
+      similarity: number
     }
 
+    const matches = (qData as unknown as HybridMatch[]) || []
+
+    console.log(`[Word Completion] Found ${matches.length} matches using Hybrid Search`)
+
     // If no matches found, use OpenAI completion as fallback
-    if (!matches || matches.length === 0) {
-      console.log('[Word Completion] No trained data found, using OpenAI word completion fallback')
-      
+    if (matches.length === 0) {
+      console.log('[Word Completion] No matches, using OpenAI fallback')
+
       try {
         const completion = await generateWordCompletion(text, incompleteWord)
-        
+
         return NextResponse.json({
           suggestions: [{
             text: completion,
-            source: 'openai-fallback' as const,
+            source: 'openai-fallback',
           }],
           matches: [],
           type: 'word',
         })
       } catch (fallbackError) {
-        console.error('Fallback completion error:', fallbackError)
-        return NextResponse.json({
-          suggestions: [],
-          matches: [],
-          error: 'No trained data available and fallback failed',
-        })
+        return NextResponse.json({ suggestions: [], matches: [], error: 'Fallback failed' })
       }
     }
 
-    // AI Agent Pattern with RAG:
-    // 1. We have the user input (text) and incomplete word
-    // 2. We retrieved relevant context from vector DB (matches)
-    // 3. Use AI to generate intelligent word completions
-    
-    console.log('Using AI Agent with RAG for word completion - Retrieved chunks:', matches.length)
-    
+    interface Suggestion {
+      text: string
+      source: 'trained-data' | 'ai-with-context'
+      similarity: number
+      isLiteral?: boolean
+    }
+
+    // Hybrid Completion Logic:
+    // 1. Extract direct completions from the matches
+    const directCompletions: Suggestion[] = matches
+      .map((match) => {
+        const completion = findWordCompletion(text, incompleteWord, match.content)
+        const isLiteral = match.similarity > 1.0
+        return {
+          text: completion,
+          source: 'trained-data' as const,
+          // Adjust similarity for display if it was a literal match (similarity > 1.0)
+          similarity: isLiteral ? Math.min(0.99, match.similarity - 1.0) : match.similarity,
+          isLiteral
+        }
+      })
+      .filter((s) => s.text && s.text.trim().length > 0 && s.text.length < 50)
+
+    // 2. Fast-Path: If we have multiple high-quality literal matches, we can skip AI
+    const strongLiteralMatches = directCompletions.filter((s) => s.isLiteral)
+
     try {
-      // Pass only top 3 context chunks to AI for faster processing
-      const contextChunks = matches.slice(0, 3).map(m => m.content)
-      const aiCompletion = await generateSmartWordCompletion(text, incompleteWord, contextChunks)
+      let aiSuggestions: Suggestion[] = []
 
-      // Also try to extract direct completions from top matches as alternatives
-      const directCompletions = matches
-        .slice(0, 2) // Only use top 2 matches for faster processing
-        .map(match => {
-          const completion = findWordCompletion(text, incompleteWord, match.content)
-          return {
-            text: completion,
-            source: 'trained-data' as const,
-            similarity: match.similarity,
-          }
-        })
-        .filter(s => s.text && s.text.trim().length > 0 && s.text.length < 50) // Word completions should be short
+      // Skip AI if we have enough confident literal matches to save time (~1.5s)
+      if (strongLiteralMatches.length < 2) {
+        const contextChunks = matches.slice(0, 3).map((m) => m.content)
+        const aiCompletion = await generateSmartWordCompletion(text, incompleteWord, contextChunks)
 
-      // Separate AI-generated from direct extractions
-      const aiSuggestions = aiCompletion && aiCompletion.trim().length > 0 ? [{
-        text: aiCompletion,
-        source: 'ai-with-context' as const,
-        similarity: matches[0]?.similarity || 0,
-      }] : []
-      
-      // Combine: direct extractions first (pure trained data), then AI
+        if (aiCompletion && aiCompletion.trim().length > 0) {
+          aiSuggestions = [{
+            text: aiCompletion,
+            source: 'ai-with-context',
+            // Adjust similarity for display if the top match was a literal match
+            similarity: matches[0]?.similarity > 1.0 ? matches[0].similarity - 1.0 : matches[0]?.similarity || 0,
+          }]
+        }
+      }
+
+      // Combine suggestions: AI first (if exists), then literals, then other trained data
       const allSuggestions = [
-        ...directCompletions, // These are pure trained-data
-        ...aiSuggestions      // This is AI-generated with context
-      ].filter((s, index, self) => 
-        // Remove duplicates and empty
+        ...aiSuggestions,
+        ...directCompletions
+      ].filter((s, index, self) =>
         s.text && s.text.trim().length > 0 &&
-        self.findIndex(t => t.text === s.text) === index
-      ).slice(0, 5) // Limit to top 5
+        self.findIndex((t) => t.text === s.text) === index
+      ).slice(0, 5)
 
       return NextResponse.json({
         suggestions: allSuggestions,
-        matches: matches.map(m => ({
+        matches: matches.slice(0, 3).map((m) => ({
           content: m.content.substring(0, 100) + '...',
-          similarity: m.similarity,
+          // Adjust similarity for display if it was a literal match
+          similarity: m.similarity > 1.0 ? m.similarity - 1.0 : m.similarity,
         })),
         type: 'word',
       })
     } catch (aiError) {
       console.error('AI Agent word completion error:', aiError)
-      
-      // Fallback to direct pattern matching only if AI fails
-      const suggestions = matches
-        .slice(0, 5)
-        .map(match => {
-          const completion = findWordCompletion(text, incompleteWord, match.content)
-          return {
-            text: completion,
-            source: 'trained-data' as const,
-            similarity: match.similarity,
-          }
-        })
-        .filter(s => s.text && s.text.trim().length > 0 && s.text.length < 50)
 
+      // Fallback to direct matches only
       return NextResponse.json({
-        suggestions,
-        matches: matches.map(m => ({
+        suggestions: directCompletions.slice(0, 5),
+        matches: matches.slice(0, 3).map((m) => ({
           content: m.content.substring(0, 100) + '...',
-          similarity: m.similarity,
+          similarity: m.similarity > 1.0 ? m.similarity - 1.0 : m.similarity,
         })),
         type: 'word',
       })
@@ -172,25 +172,25 @@ export async function POST(request: NextRequest) {
  */
 function findWordCompletion(text: string, incompleteWord: string, matchedContent: string): string {
   const words = matchedContent.split(/\s+/)
-  
+
   // Find words in content that start with the incomplete word (case-insensitive for ASCII, exact for others)
   for (const word of words) {
     const cleanWord = word.replace(/[.,!?;:'"]/g, '')
-    
+
     // Skip if the word is exactly the same as incomplete word (nothing to complete)
-    if (cleanWord.toLowerCase() === incompleteWord.toLowerCase() || 
-        cleanWord === incompleteWord) {
+    if (cleanWord.toLowerCase() === incompleteWord.toLowerCase() ||
+      cleanWord === incompleteWord) {
       continue
     }
-    
+
     // For ASCII text, use case-insensitive matching
     if (/^[a-zA-Z]+$/.test(incompleteWord)) {
-      if (cleanWord.toLowerCase().startsWith(incompleteWord.toLowerCase()) && 
-          cleanWord.length > incompleteWord.length) {
+      if (cleanWord.toLowerCase().startsWith(incompleteWord.toLowerCase()) &&
+        cleanWord.length > incompleteWord.length) {
         // Return only the completion part
         return cleanWord.substring(incompleteWord.length)
       }
-    } 
+    }
     // For non-ASCII (Korean, Chinese, etc.), use exact prefix matching
     else {
       if (cleanWord.startsWith(incompleteWord) && cleanWord.length > incompleteWord.length) {
@@ -199,19 +199,19 @@ function findWordCompletion(text: string, incompleteWord: string, matchedContent
       }
     }
   }
-  
+
   // If no exact match found in words, look for the continuation in content
   // But only if the matched content is not just the incomplete word itself
   const trimmedContent = matchedContent.trim()
-  if (trimmedContent.toLowerCase() === incompleteWord.toLowerCase() || 
-      trimmedContent === incompleteWord) {
+  if (trimmedContent.toLowerCase() === incompleteWord.toLowerCase() ||
+    trimmedContent === incompleteWord) {
     return '' // Nothing to complete
   }
-  
+
   const contentLower = matchedContent.toLowerCase()
   const incompleteLower = incompleteWord.toLowerCase()
   const index = contentLower.indexOf(incompleteLower)
-  
+
   if (index !== -1) {
     // Find the next word boundary
     const afterIncomplete = matchedContent.substring(index + incompleteWord.length)
@@ -221,7 +221,7 @@ function findWordCompletion(text: string, incompleteWord: string, matchedContent
       return nextWordMatch[0]
     }
   }
-  
+
   // If no match found, return empty
   return ''
 }

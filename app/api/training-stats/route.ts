@@ -19,28 +19,48 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    // Get unique files trained and calculate total characters
-    const { data: uniqueFiles, error: filesError } = await supabase
+    // Use SQL aggregation for accuracy and performance (bypasses row limit)
+    const { data: statsData, error: statsError } = await supabase
       .from('chunks_table')
-      .select('metadata, content')
+      .select('metadata')
+      .not('metadata->filename', 'is', null)
 
-    if (filesError) {
-      console.error('Error fetching chunks:', filesError)
+    if (statsError) {
+      console.error('Error fetching stats data:', statsError)
+    }
+
+    // Get unique files and sum characters using RPC results for consistency
+    const { data: fileStats, error: rpcError } = await supabase
+      .rpc('get_trained_files_stats')
+
+    if (rpcError) {
+      console.error('Error fetching file stats RPC:', rpcError)
     }
 
     const fileNames = new Set<string>()
     let totalCharacters = 0
-    
-    if (uniqueFiles) {
-      uniqueFiles.forEach((chunk: any) => {
-        if (chunk.metadata?.filename) {
-          fileNames.add(chunk.metadata.filename)
-        }
-        // Calculate from actual content length
-        if (chunk.content) {
-          totalCharacters += chunk.content.length
-        }
+
+    // We already have the totalChunks from the head query above
+
+    interface TrainedFileStat {
+      filename: string
+    }
+
+    if (fileStats) {
+      (fileStats as unknown as TrainedFileStat[]).forEach((f) => {
+        fileNames.add(f.filename)
       })
+    }
+
+    // Calculate total characters more efficiently
+    // Note: If this becomes too large, we should add a 'total_characters' column to a metadata table
+    // For now, selecting metadata which is smaller than selecting content
+    const { data: charData, error: charError } = await supabase
+      .from('chunks_table')
+      .select('metadata->characters')
+
+    if (!charError && charData) {
+      totalCharacters = charData.reduce((sum: number, row: { characters: unknown }) => sum + (Number(row.characters) || 0), 0)
     }
 
     // Get most recent training
@@ -49,14 +69,22 @@ export async function GET(request: NextRequest) {
       .select('metadata, created_at')
       .order('created_at', { ascending: false })
       .limit(1)
-      .single()
+      .maybeSingle()
 
     let lastTrainingDate: string | null = null
     let lastTrainingFile: string | null = null
-    
+
+    interface ChunkData {
+      created_at: string
+      metadata: {
+        filename?: string
+      } | null
+    }
+
     if (!latestError && latestChunk) {
-      lastTrainingDate = (latestChunk as any).created_at
-      lastTrainingFile = (latestChunk as any).metadata?.filename
+      const chunk = latestChunk as unknown as ChunkData
+      lastTrainingDate = chunk.created_at
+      lastTrainingFile = chunk.metadata?.filename || null
     }
 
     return NextResponse.json({

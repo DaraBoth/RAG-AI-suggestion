@@ -35,17 +35,17 @@ export async function POST(request: NextRequest) {
     console.log(`[Phrase Suggestion] Query: "${text}"`)
     console.log(`[Phrase Suggestion] Generated query embedding with ${embedding.length} dimensions`)
 
-    // Query Supabase for similar chunks using the match_chunks function
-    const { data, error }:{data: any, error: any} = await supabase.rpc('match_chunks' as any, {
-      query_embedding: embedding,
-      match_threshold: 0.15, // Lower threshold for more context
-      match_count: 10, // Increased for better pattern recognition
-    } as any)
+    // Extract last word for literal boost
+    const words = text.trim().split(/\s+/)
+    const lastWord = words[words.length - 1] || ''
 
-    console.log(`[Phrase Suggestion] Found ${data?.length || 0} matches from trained data`)
-    if (data && data.length > 0) {
-      console.log(`[Phrase Suggestion] Top match similarity: ${data[0].similarity}, content preview: ${data[0].content.substring(0, 100)}...`)
-    }
+    // Query Supabase for similar chunks using high-speed hybrid search
+    const { data: qData, error } = await supabase.rpc('match_chunks_hybrid' as any, {
+      query_embedding: embedding,
+      literal_query: lastWord,
+      match_threshold: 0.15,
+      match_count: 8,
+    } as any)
 
     if (error) {
       console.error('Error querying chunks:', error)
@@ -55,15 +55,24 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const matches = data as any[]
+    interface HybridMatch {
+      id: number
+      content: string
+      metadata: Record<string, unknown>
+      similarity: number
+    }
+
+    const matches = (qData as unknown as HybridMatch[]) || []
+
+    console.log(`[Phrase Suggestion] Found ${matches.length} matches using Hybrid Search`)
 
     // If no matches found, use OpenAI completion as fallback
     if (!matches || matches.length === 0) {
-      console.log('[Phrase Suggestion] No trained data found, using OpenAI phrase suggestion fallback')
-      
+      console.log('[Phrase Suggestion] No matches, using OpenAI fallback')
+
       try {
         const completion = await generatePhraseSuggestion(text)
-        
+
         return NextResponse.json({
           suggestions: [{
             text: completion,
@@ -73,68 +82,72 @@ export async function POST(request: NextRequest) {
           type: 'phrase',
         })
       } catch (fallbackError) {
-        console.error('Fallback phrase suggestion error:', fallbackError)
-        return NextResponse.json({
-          suggestions: [],
-          matches: [],
-          error: 'No trained data available and fallback failed',
-        })
+        return NextResponse.json({ suggestions: [], matches: [], error: 'Fallback failed' })
       }
     }
 
-    // AI Agent Pattern with RAG:
-    // 1. We have the user input (text)
-    // 2. We retrieved relevant context from vector DB (matches)
-    // 3. Use AI to generate intelligent, contextualized suggestions
-    
-    console.log('Using AI Agent with RAG - Retrieved chunks:', matches.length)
-    
-    try {
-      // Pass top 5 context chunks to AI for better pattern recognition
-      const contextChunks = matches.slice(0, 5).map(m => m.content)
-      const aiSuggestion = await generateSmartPhraseSuggestion(text, contextChunks)
+    interface Suggestion {
+      text: string
+      source: 'trained-data' | 'ai-with-context'
+      similarity: number
+      isLiteral?: boolean
+    }
 
-      // Also try to extract direct suggestions from top matches as alternatives
-      const directSuggestions = matches
-        .slice(0, 4) // Use top 4 matches for better variety
+    // Hybrid Suggestion Logic:
+    try {
+      // 1. Extract direct suggestions from the matches
+      const directSuggestions: Suggestion[] = matches
         .map(match => {
           const suggestion = generatePhraseSuggestionFromContent(text, match.content)
+          const isLiteral = match.similarity > 1.0
           return {
             text: suggestion,
             source: 'trained-data' as const,
-            similarity: match.similarity,
+            similarity: isLiteral ? Math.min(0.99, match.similarity - 1.0) : match.similarity,
+            isLiteral
           }
         })
-        .filter(s => s.text && s.text.trim().length > 0 && s.text.length < 200) // Filter out chunks
+        .filter(s => s.text && s.text.trim().length > 0 && s.text.length < 200)
 
-      // Separate AI-generated from direct extractions
-      const aiSuggestions = aiSuggestion && aiSuggestion.trim().length > 0 ? [{
-        text: aiSuggestion,
-        source: 'ai-with-context' as const,
-        similarity: matches[0]?.similarity || 0,
-      }] : []
-      
-      // Combine: direct extractions first (pure trained data), then AI
+      // 2. Fast-Path: If we have multiple high-quality literal matches, we can skip AI
+      const strongLiteralMatches = directSuggestions.filter(s => s.isLiteral)
+
+      let aiSuggestions: Suggestion[] = []
+
+      if (strongLiteralMatches.length < 2) {
+        // Pass top 5 context chunks to AI for better pattern recognition
+        const contextChunks = matches.slice(0, 5).map(m => m.content)
+        const aiSuggestion = await generateSmartPhraseSuggestion(text, contextChunks)
+
+        if (aiSuggestion && aiSuggestion.trim().length > 0) {
+          aiSuggestions = [{
+            text: aiSuggestion,
+            source: 'ai-with-context',
+            similarity: matches[0]?.similarity > 1.0 ? matches[0].similarity - 1.0 : matches[0]?.similarity || 0,
+          }]
+        }
+      }
+
+      // Combine suggestions: AI first (if exists), then literals, then other trained data
       const allSuggestions = [
-        ...directSuggestions, // These are pure trained-data
-        ...aiSuggestions      // This is AI-generated with context
-      ].filter((s, index, self) => 
-        // Remove duplicates and empty
+        ...aiSuggestions,
+        ...directSuggestions
+      ].filter((s, index, self) =>
         s.text && s.text.trim().length > 0 &&
         self.findIndex(t => t.text === s.text) === index
-      ).slice(0, 5) // Limit to top 5
+      ).slice(0, 5)
 
       return NextResponse.json({
         suggestions: allSuggestions,
-        matches: matches.map(m => ({
+        matches: matches.slice(0, 3).map((m: any) => ({
           content: m.content.substring(0, 100) + '...',
-          similarity: m.similarity,
+          similarity: m.similarity > 1.0 ? m.similarity - 1.0 : m.similarity,
         })),
         type: 'phrase',
       })
     } catch (aiError) {
       console.error('AI Agent suggestion error:', aiError)
-      
+
       // Fallback to direct extraction only if AI fails
       const suggestions = matches
         .slice(0, 5)
@@ -186,32 +199,32 @@ function generatePhraseSuggestionFromContent(userInput: string, matchedContent: 
   // Try matching with last 4, 3, 2, then 1 word for best context
   for (const searchPhrase of [lastFourWords, lastThreeWords, lastTwoWords, lastWord]) {
     if (!searchPhrase || searchPhrase.length < 2) continue
-    
+
     const searchLower = searchPhrase.toLowerCase()
     const contentLower = content.toLowerCase()
-    
+
     // Find all occurrences of the phrase
     let index = contentLower.indexOf(searchLower)
-    
+
     if (index !== -1) {
       // Found the phrase, extract what comes after
       const afterIndex = index + searchPhrase.length
       let continuation = content.substring(afterIndex).trim()
-      
+
       // Remove leading punctuation but keep it if it's part of the sentence
       continuation = continuation.replace(/^[.,;:!?]\s*/, '')
-      
+
       // Get up to 15 words or until sentence end
       const words = continuation.split(/\s+/)
       const maxWords = 15
       let result = words.slice(0, maxWords).join(' ')
-      
+
       // If we have a natural sentence ending, cut there
       const sentenceEnd = result.match(/^[^.!?]*[.!?]/)
       if (sentenceEnd) {
         result = sentenceEnd[0]
       }
-      
+
       if (result.length > 3) {
         return result
       }
@@ -222,13 +235,13 @@ function generatePhraseSuggestionFromContent(userInput: string, matchedContent: 
   // Look for the input within the content and extract continuation
   const contentWords = content.toLowerCase().split(/\s+/)
   const inputWordsLower = inputWords.map(w => w.toLowerCase())
-  
+
   // Find where the input context appears in content
   for (let i = 0; i < contentWords.length - inputWords.length; i++) {
-    const matchCount = inputWordsLower.filter((word, idx) => 
+    const matchCount = inputWordsLower.filter((word, idx) =>
       contentWords[i + idx] === word
     ).length
-    
+
     // If we have a good match (50%+ words match)
     if (matchCount >= Math.max(2, inputWords.length * 0.5)) {
       const startIdx = content.toLowerCase().indexOf(contentWords.slice(i, i + inputWords.length).join(' '))
@@ -258,8 +271,8 @@ function generatePhraseSuggestionFromContent(userInput: string, matchedContent: 
   // If content is a complete, relevant phrase that could follow the input
   if (content.length < 100 && content.length > 5) {
     // Check if it could be a natural continuation (doesn't repeat the input)
-    if (!content.toLowerCase().includes(input.toLowerCase()) || 
-        content.toLowerCase().indexOf(input.toLowerCase()) > 5) {
+    if (!content.toLowerCase().includes(input.toLowerCase()) ||
+      content.toLowerCase().indexOf(input.toLowerCase()) > 5) {
       return content
     }
   }

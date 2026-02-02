@@ -12,10 +12,9 @@ export async function GET() {
   try {
     console.log('[Trained Files] Fetching list of trained files')
 
-    // Get all unique filenames from metadata
-    const { data, error } = await supabase
-      .from('chunks_table')
-      .select('metadata')
+    // Use RPC function for server-side aggregation (bypasses 1000 row limit)
+    const { data: filesData, error } = await supabase
+      .rpc('get_trained_files_stats')
 
     if (error) {
       console.error('[Trained Files] Error fetching files:', error)
@@ -25,44 +24,26 @@ export async function GET() {
       )
     }
 
-    // Extract unique filenames and count chunks per file
-    const fileMap = new Map<string, { filename: string; chunkCount: number; lastUpdated: string }>()
-    
-    console.log(`[Trained Files] Processing ${data?.length || 0} chunks`)
-    
-    data?.forEach((chunk: any, index: number) => {
-      // Log first few chunks to debug
-      if (index < 5) {
-        console.log(`[Trained Files] Chunk ${index}:`, JSON.stringify(chunk))
-      }
-      
-      const filename = chunk.metadata?.filename
-      const uploadedAt = chunk.metadata?.uploaded_at || chunk.metadata?.learned_at
-      
-      if (filename) {
-        const existing = fileMap.get(filename)
-        if (existing) {
-          existing.chunkCount++
-          // Keep the most recent timestamp
-          if (uploadedAt && uploadedAt > existing.lastUpdated) {
-            existing.lastUpdated = uploadedAt
-          }
-        } else {
-          fileMap.set(filename, {
-            filename,
-            chunkCount: 1,
-            lastUpdated: uploadedAt || new Date().toISOString(),
-          })
-        }
-      } else {
-        console.log(`[Trained Files] Chunk ${index} has no filename in metadata:`, chunk)
-      }
-    })
-    
-    console.log('[Trained Files] Unique files found:', Array.from(fileMap.keys()))
+    interface TrainedFileStat {
+      filename: string
+      chunk_count: number
+      last_updated: string
+    }
 
-    // Convert map to array and sort by last updated (most recent first)
-    const files = Array.from(fileMap.values()).sort((a, b) => 
+    interface TrainedFileResult {
+      filename: string
+      chunkCount: number
+      lastUpdated: string
+    }
+
+    // ... later in the code ...
+
+    // Map the results to the expected format
+    const files = ((filesData as unknown as TrainedFileStat[]) || []).map((f) => ({
+      filename: f.filename,
+      chunkCount: Number(f.chunk_count),
+      lastUpdated: f.last_updated,
+    })).sort((a: TrainedFileResult, b: TrainedFileResult) =>
       new Date(b.lastUpdated).getTime() - new Date(a.lastUpdated).getTime()
     )
 

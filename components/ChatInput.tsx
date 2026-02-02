@@ -13,7 +13,7 @@ import { BorderBeam } from '@/components/ui/border-beam'
 import { DotPattern } from '@/components/ui/dot-pattern'
 import { Particles } from '@/components/ui/particles'
 import { Meteors } from '@/components/ui/meteors'
-import { completeWord, suggestPhrase, learnFromAcceptedSuggestion } from '@/services'
+import { completeWord, suggestPhrase, learnFromAcceptedSuggestion, Suggestion } from '@/services'
 
 export default function ChatInput() {
   // Get state and actions from store
@@ -35,6 +35,7 @@ export default function ChatInput() {
 
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const debounceTimerRef = useRef<NodeJS.Timeout>()
+  const suggestionCacheRef = useRef<Map<string, Suggestion[]>>(new Map())
 
   // Auto-expand textarea based on content
   useEffect(() => {
@@ -128,6 +129,9 @@ export default function ChatInput() {
 
       setSuggestions(allSuggestions)
       setSelectedSuggestionIndex(0) // Reset to first suggestion
+
+      // Cache the results
+      suggestionCacheRef.current.set(text.trim(), allSuggestions)
     } catch (error) {
       console.error('Error fetching suggestion:', error)
       setSuggestions([])
@@ -143,28 +147,39 @@ export default function ChatInput() {
     const value = e.target.value
     setInputValue(value)
 
-    // Clear previous suggestions immediately when user types
-    setSuggestions([])
+    const cacheKey = value.trim()
 
     // Detect language of current input
     const detected = detectLanguage(value)
     setDetectedLanguage(detected)
+
+    // Check cache for instant feedback
+    if (suggestionCacheRef.current.has(cacheKey)) {
+      setSuggestions(suggestionCacheRef.current.get(cacheKey) || [])
+    } else {
+      // Clear previous suggestions if not in cache
+      setSuggestions([])
+    }
 
     // Clear previous timer
     if (debounceTimerRef.current) {
       clearTimeout(debounceTimerRef.current)
     }
 
-    // Set new timer for debounced API call (500ms for faster response)
+    // Set new timer for debounced API call (250ms for faster response)
     debounceTimerRef.current = setTimeout(() => {
       // Only fetch suggestion if language matches preference
       if (matchesPreferredLanguage(value, preferredLanguage)) {
-        fetchSuggestion(value)
+        // If we already have cached results, we don't strictly need to fetch again
+        // unless we want to ensure freshness (but for autocomplete, cache is usually fine)
+        if (!suggestionCacheRef.current.has(cacheKey)) {
+          fetchSuggestion(value)
+        }
       } else {
         // Clear suggestions if language doesn't match
         setSuggestions([])
       }
-    }, 500)
+    }, 250)
   }
 
   /**
@@ -304,6 +319,14 @@ export default function ChatInput() {
     try {
       const { trainWithText } = await import('@/services')
       const data = await trainWithText(inputValue)
+
+      // Sync with global store to trigger refresh in TrainingTab
+      useAppStore.getState().setTrainingUploadStatus({
+        status: 'success',
+        message: 'Manual training successful',
+        filename: 'manual-training.txt',
+        chunks: data.chunks
+      })
 
       setTeachSuccess(true)
       setTimeout(() => setTeachSuccess(false), 3000)
