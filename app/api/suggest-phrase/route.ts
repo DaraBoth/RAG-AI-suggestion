@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabase } from '@/lib/supabase'
-import { generateEmbedding, generatePhraseSuggestion, generateSmartPhraseSuggestion } from '@/lib/openai'
+import { generateEmbedding } from '@/lib/embeddings'
+import { generatePhraseSuggestion, generateSmartPhraseSuggestion } from '@/lib/openai'
 
 interface MatchResult {
   id: number

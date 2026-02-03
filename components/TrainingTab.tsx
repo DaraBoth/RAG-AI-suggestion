@@ -16,6 +16,7 @@ import { Particles } from '@/components/ui/particles'
 import { Confetti } from '@/components/ui/confetti'
 import { useRef } from 'react'
 import Image from 'next/image'
+import { AIProviderBadge } from '@/components/AIProviderBadge'
 import {
   Dialog,
   DialogContent,
@@ -565,6 +566,11 @@ export default function TrainingTab() {
 
   return (
     <div className="space-y-4 sm:space-y-6">
+      {/* AI Provider Badge */}
+      <div className="flex justify-end">
+        <AIProviderBadge />
+      </div>
+      
       {/* Training Statistics */}
       <div className="grid gap-3 sm:gap-4 grid-cols-2 lg:grid-cols-4">
         {loadingStats || !stats ? (

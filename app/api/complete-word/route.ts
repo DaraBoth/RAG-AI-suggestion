@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabase } from '@/lib/supabase'
-import { generateEmbedding, generateWordCompletion, generateSmartWordCompletion } from '@/lib/openai'
+import { generateEmbedding } from '@/lib/embeddings'
+import { generateWordCompletion, generateSmartWordCompletion } from '@/lib/openai'
 
 interface MatchResult {
   id: number

@@ -61,12 +61,14 @@ A cutting-edge Next.js application featuring AI-powered autocomplete with Retrie
 
 ## 🏗️ Tech Stack
 
-- **Framework**: Next.js 15.1.6 (App Router)
+- **Framework**: Next.js 16.1.6 (App Router)
 - **Language**: TypeScript 5.7.2
 - **Styling**: Tailwind CSS 3.4.17 + shadcn/ui + Magic UI
 - **State Management**: Zustand 5.0.2 with localStorage persistence
 - **Database**: Supabase 2.49.2 (PostgreSQL with pgvector)
-- **AI**: OpenAI API 4.77.0 (text-embedding-3-small + GPT-3.5-turbo)
+- **AI Providers**: 
+  - **OpenAI API 4.77.0** (text-embedding-3-small + GPT-3.5-turbo)
+  - **Google Gemini** (text-embedding-004 + gemini-1.5-flash) - FREE tier available!
 - **PDF Processing**: pdf-parse 1.1.1
 - **Animations**: Framer Motion 11.15.0
 - **File Upload**: react-dropzone 14.3.5
@@ -78,8 +80,12 @@ Before you begin, ensure you have:
 
 1. **Node.js** (v18 or higher)
 2. **Supabase Account** (free tier works)
-3. **OpenAI API Key** (with access to embeddings API)
+3. **AI Provider API Key** (choose one or both):
+   - **OpenAI API Key** (paid, high quality) - Get from [platform.openai.com](https://platform.openai.com/api-keys)
+   - **Google Gemini API Key** (FREE tier available!) - Get from [makersuite.google.com](https://makersuite.google.com/app/apikey)
 4. **(Optional)** For Public API: Run API tables migration for third-party access
+
+> 💡 **New!** Gemini offers a generous free tier with 15 requests/minute and 1M tokens/day - perfect for getting started without any costs!
 
 ## 🛠️ Setup Instructions
 
@@ -100,11 +106,17 @@ npm install
 
 Run the following SQL in your Supabase SQL Editor:
 
+> **Note:** The embedding dimension should match your AI provider:
+> - OpenAI (text-embedding-3-small): 1536 dimensions
+> - Google Gemini (text-embedding-004): 768 dimensions
+> 
+> The system automatically handles dimension matching. Use 1536 for maximum compatibility (both providers supported).
+
 ```sql
 -- Enable the pgvector extension
 create extension if not exists vector;
 
--- Create the chunks_table
+-- Create the chunks_table (1536 dimensions supports both OpenAI and Gemini)
 create table chunks_table (
   id bigserial primary key,
   content text not null,
@@ -184,23 +196,46 @@ Create a `.env.local` file in the root directory:
 SUPABASE_URL=your-supabase-project-url
 SUPABASE_ANON_KEY=your-supabase-anon-key
 
-# OpenAI Configuration
+# AI Provider Selection (choose 'openai' or 'gemini')
+AI_PROVIDER=gemini
+
+# OpenAI Configuration (optional if using Gemini)
 OPENAI_API_KEY=your-openai-api-key
+
+# Google Gemini Configuration (FREE tier available!)
+GEMINI_API_KEY=your-gemini-api-key
 
 # Admin Security
 ADMIN_PASSWORD=your-secure-admin-password-here
 ```
 
-**To get your Supabase credentials:**
+**AI Provider Setup:**
+
+The system supports two AI providers - you can choose either one or configure both for automatic fallback:
+
+**Option 1: Google Gemini (Recommended for Free Tier)**
+1. Go to [Google AI Studio](https://makersuite.google.com/app/apikey)
+2. Create a new API key
+3. Set `AI_PROVIDER=gemini` in your `.env.local`
+4. Add your `GEMINI_API_KEY`
+5. Free tier includes:
+   - 15 requests per minute
+   - 1 million tokens per day
+   - Models: text-embedding-004 (768d), gemini-1.5-flash
+
+**Option 2: OpenAI (Higher Quality, Paid)**
+1. Go to [OpenAI Platform](https://platform.openai.com)
+2. Navigate to API Keys
+3. Create a new secret key
+4. Set `AI_PROVIDER=openai` in your `.env.local`
+5. Add your `OPENAI_API_KEY`
+6. Models: text-embedding-3-small (1536d), gpt-3.5-turbo
+
+**Supabase Credentials:**
 1. Go to your [Supabase Dashboard](https://app.supabase.com)
 2. Select your project
 3. Go to Settings → API
 4. Copy the Project URL and anon/public key
-
-**To get your OpenAI API key:**
-1. Go to [OpenAI Platform](https://platform.openai.com)
-2. Navigate to API Keys
-3. Create a new secret key
 
 ### 4. Run the Development Server
 

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabase } from '@/lib/supabase'
-import { generateEmbedding, generateChatResponse } from '@/lib/openai'
+import { generateEmbedding } from '@/lib/embeddings'
+import { generateChatResponse } from '@/lib/openai'
 
 interface Message {
   role: 'user' | 'assistant'
