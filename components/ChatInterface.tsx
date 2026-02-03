@@ -186,7 +186,7 @@ export default function ChatInterface() {
                       <button
                         key={i}
                         onClick={() => setInputValue(tip)}
-                        className="text-left px-4 py-2.5 rounded-xl border border-white/5 bg-white/5 text-xs text-white/60 hover:bg-white/10 hover:text-white transition-all text-sm"
+                        className="text-left px-4 py-2.5 rounded-xl border border-white/5 bg-white/5 text-sm text-white/60 hover:bg-white/10 hover:text-white transition-all"
                       >
                         <span className="text-primary mr-2">✦</span>
                         {tip}

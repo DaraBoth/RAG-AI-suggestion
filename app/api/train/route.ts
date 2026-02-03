@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { supabase } from '@/lib/supabase'
 import { generateEmbedding } from '@/lib/embeddings'
 import pdf from 'pdf-parse'
+import { extractTextFromPDFImages } from '@/lib/ocr'
 
 /**
  * Chunk text by words (word-by-word extraction)
@@ -173,6 +174,13 @@ export async function POST(request: NextRequest) {
     
     console.log(`[Train] Using chunking strategy: ${chunkType}`)
 
+    // Track OCR statistics
+    let ocrStats = {
+      imagesProcessed: 0,
+      charactersExtracted: 0,
+      provider: 'none' as string
+    }
+
     // Check if this is a manual training file (should be appended)
     const isManualTraining = file.name === 'manual-training.txt'
     
@@ -230,9 +238,33 @@ export async function POST(request: NextRequest) {
     if (file.type === 'application/pdf') {
       // Use the already loaded buffer
       
-      // Extract text from PDF
+      console.log('[Train] Extracting text from PDF...')
+      
+      // Extract regular text from PDF
       const data = await pdf(buffer)
       extractedText = data.text
+      
+      console.log(`[Train] Extracted ${extractedText.length} characters from PDF text`)
+      
+      // Extract text from images using OCR
+      console.log('[Train] Starting OCR on PDF images...')
+      const ocrResult = await extractTextFromPDFImages(buffer)
+      
+      // Store OCR stats
+      ocrStats = {
+        imagesProcessed: ocrResult.imagesProcessed,
+        charactersExtracted: ocrResult.charactersExtracted,
+        provider: ocrResult.provider
+      }
+      
+      if (ocrResult.text && ocrResult.text.length > 0) {
+        console.log(`[Train] OCR (${ocrResult.provider}) extracted ${ocrResult.charactersExtracted} characters from ${ocrResult.imagesProcessed} images`)
+        extractedText += '\n\n' + ocrResult.text
+      } else {
+        console.log('[Train] No text extracted from images (or no images found)')
+      }
+      
+      console.log(`[Train] Total extracted text: ${extractedText.length} characters`)
     } 
     // Handle plain text files
     else if (file.type === 'text/plain' || file.name.endsWith('.txt')) {
@@ -372,6 +404,7 @@ export async function POST(request: NextRequest) {
       chunks: insertedChunks.length,
       filename: file.name,
       processingTime: finalElapsedTime,
+      ocr: ocrStats, // Include OCR statistics
     })
 
   } catch (error) {

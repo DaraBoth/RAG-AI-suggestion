@@ -45,6 +45,7 @@ A cutting-edge Next.js application featuring AI-powered autocomplete with Retrie
 
 ### 📊 Training & Analytics
 - **PDF & Text Training**: Upload PDF files or train directly from input text
+- **OCR Support**: Automatic text extraction from images in PDFs (scanned documents, screenshots, diagrams)
 - **Consolidated Manual Training**: All text-based training saved to single file
 - **File Management**: Multi-select delete with confirmation and toast notifications
 - **Real-time Statistics**: Live updates with animated number counters
@@ -69,7 +70,8 @@ A cutting-edge Next.js application featuring AI-powered autocomplete with Retrie
 - **AI Providers**: 
   - **OpenAI API 4.77.0** (text-embedding-3-small + GPT-3.5-turbo)
   - **Google Gemini** (text-embedding-004 + gemini-1.5-flash) - FREE tier available!
-- **PDF Processing**: pdf-parse 1.1.1
+- **PDF Processing**: pdf-parse 1.1.1 + pdfjs-dist (image extraction)
+- **OCR**: Tesseract.js 7.0.0 (optical character recognition)
 - **Animations**: Framer Motion 11.15.0
 - **File Upload**: react-dropzone 14.3.5
 - **UI Components**: Radix UI (Tabs, Slot) + Lucide React 0.468.0
@@ -204,6 +206,13 @@ OPENAI_API_KEY=your-openai-api-key
 
 # Google Gemini Configuration (FREE tier available!)
 GEMINI_API_KEY=your-gemini-api-key
+
+# OCR Provider Configuration
+# Choose: 'tesseract' (default, free, local), 'gemini' (free, cloud), or 'openai' (paid, highest quality)
+# Gemini Vision: FREE with 15 RPM, great accuracy
+# OpenAI Vision: Paid but highest accuracy
+# Tesseract: FREE, local processing, good for simple text
+OCR_PROVIDER=gemini
 
 # Admin Security
 ADMIN_PASSWORD=your-secure-admin-password-here

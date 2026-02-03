@@ -17,6 +17,7 @@ import { Confetti } from '@/components/ui/confetti'
 import { useRef } from 'react'
 import Image from 'next/image'
 import { AIProviderBadge } from '@/components/AIProviderBadge'
+import { OCRProviderBadge } from '@/components/OCRProviderBadge'
 import {
   Dialog,
   DialogContent,
@@ -499,8 +500,12 @@ export default function TrainingTab() {
           ))
 
           // Show success toast with processing details
+          const ocrInfo = data.ocr?.imagesProcessed > 0 
+            ? ` (+ ${data.ocr.imagesProcessed} images via ${data.ocr.provider.toUpperCase()} OCR)`
+            : ''
+          
           toast.success('File Trained Successfully', {
-            description: `${file.name}: ${data.chunks} chunks processed in ${Math.round((data.processingTime || 0) / 1000)}s`,
+            description: `${file.name}: ${data.chunks} chunks processed in ${Math.round((data.processingTime || 0) / 1000)}s${ocrInfo}`,
           })
         }
 
@@ -566,9 +571,10 @@ export default function TrainingTab() {
 
   return (
     <div className="space-y-4 sm:space-y-6">
-      {/* AI Provider Badge */}
-      <div className="flex justify-end">
+      {/* AI Provider Badge & OCR Badge */}
+      <div className="flex justify-end gap-2 flex-wrap">
         <AIProviderBadge />
+        <OCRProviderBadge />
       </div>
       
       {/* Training Statistics */}
