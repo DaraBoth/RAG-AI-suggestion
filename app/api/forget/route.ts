@@ -45,26 +45,44 @@ export async function DELETE(request: NextRequest) {
     const deletedCount = data?.length || 0
     console.log(`[Forget] Successfully deleted ${deletedCount} chunks for file: ${filename}`)
 
-    // Delete the original file from storage if it exists
+    // Delete the original file from storage if it exists (with timeout protection)
+    let storageDeleted = false
     if (storagePath) {
       console.log(`[Forget] Deleting original file from storage: ${storagePath}`)
-      const { error: storageError } = await supabase.storage
-        .from('training-files')
-        .remove([storagePath])
+      
+      try {
+        // Add a timeout to prevent hanging
+        const timeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Storage deletion timeout')), 8000)
+        )
+        
+        const deletePromise = supabase.storage
+          .from('training-files')
+          .remove([storagePath])
+        
+        const { error: storageError } = await Promise.race([
+          deletePromise,
+          timeoutPromise
+        ]) as any
 
-      if (storageError) {
-        console.error('[Forget] Error deleting file from storage:', storageError)
-        // Don't fail the request if storage deletion fails
-      } else {
-        console.log(`[Forget] Successfully deleted file from storage`)
+        if (storageError) {
+          console.error('[Forget] Error deleting file from storage:', storageError)
+        } else {
+          console.log(`[Forget] Successfully deleted file from storage`)
+          storageDeleted = true
+        }
+      } catch (timeoutError) {
+        console.error('[Forget] Storage deletion timed out:', timeoutError)
+        // Continue anyway - chunks are already deleted which is the most important part
       }
     }
 
     return NextResponse.json({
       success: true,
-      message: `Successfully deleted ${deletedCount} chunks from "${filename}"`,
+      message: `Successfully deleted ${deletedCount} chunks from "${filename}"${storagePath && !storageDeleted ? ' (storage file deletion may have failed)' : ''}`,
       deletedCount,
       filename,
+      storageDeleted,
     })
   } catch (error) {
     console.error('[Forget] Error:', error)

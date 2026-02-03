@@ -61,7 +61,7 @@ export async function trainWithText(text: string, filename: string = 'manual-tra
  */
 export async function deleteTrainingFile(filename: string): Promise<void> {
   const response = await fetch('/api/forget', {
-    method: 'POST',
+    method: 'DELETE',
     headers: {
       'Content-Type': 'application/json',
     },

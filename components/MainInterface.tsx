@@ -9,7 +9,7 @@ import { MessageSquare, BookOpen, MessagesSquare, Github, Coffee, Heart, Sparkle
 
 export default function MainInterface() {
   return (
-    <div className="container mx-auto max-w-4xl px-3 sm:px-4 py-6 sm:py-16">
+    <div className="container mx-auto max-w-4xl px-3 sm:px-4 py-6 sm:py-16 overflow-x-hidden">
       {/* Premium Header */}
       <div className="mb-12 sm:mb-20 text-center relative">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-blue-500/10 blur-[100px] pointer-events-none rounded-full" />
@@ -109,27 +109,29 @@ export default function MainInterface() {
       </Tabs>
 
       {/* Footer */}
-      <div className="mt-12 sm:mt-24 text-center border-t border-white/5 pt-12">
-        <div className="flex flex-col items-center gap-4">
-          <p className="flex items-center justify-center gap-1.5 text-xs sm:text-sm text-white/30">
-            Built with <Heart className="h-3.5 w-3.5 fill-red-500/50 text-red-500/50" /> by
+      <div className="mt-12 sm:mt-24 text-center border-t border-white/5 pt-8 sm:pt-12">
+        <div className="flex flex-col items-center gap-4 px-4">
+          <p className="flex flex-wrap items-center justify-center gap-x-1.5 gap-y-2 text-xs sm:text-sm text-white/30">
+            <span className="flex items-center gap-1.5">
+              Built with <Heart className="h-3.5 w-3.5 fill-red-500/50 text-red-500/50" /> by
+            </span>
             <a
               href="https://www.kosign.com.kh/"
               target="_blank"
               rel="noopener noreferrer"
-              className="font-medium text-white/50 transition-colors hover:text-white"
+              className="font-medium text-white/50 transition-colors hover:text-white whitespace-nowrap"
             >
               KOSIGN Global Biz Center
             </a>
-            <span className="text-white/30 mx-1">•</span>
+            <span className="hidden sm:inline text-white/30 mx-1">•</span>
             <span className="text-white/40 text-xs">Open Source License by KOSIGN</span>
           </p>
-          <div className="flex items-center gap-3">
-            <span className="h-px w-8 bg-white/5" />
-            <p className="text-[10px] uppercase tracking-[0.2em] text-white/20 font-semibold">
+          <div className="flex flex-wrap items-center justify-center gap-3">
+            <span className="hidden sm:block h-px w-8 bg-white/5" />
+            <p className="text-[10px] sm:text-xs uppercase tracking-[0.15em] sm:tracking-[0.2em] text-white/20 font-semibold px-2">
               TypeFlow AI v1.0.0 • Production Stable
             </p>
-            <span className="h-px w-8 bg-white/5" />
+            <span className="hidden sm:block h-px w-8 bg-white/5" />
           </div>
         </div>
       </div>

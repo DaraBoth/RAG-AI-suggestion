@@ -317,7 +317,7 @@ export default function ChatInterface() {
                 onChange={(e) => setInputValue(e.target.value)}
                 onKeyDown={handleKeyDown}
                 placeholder="Message AI assistant..."
-                className="w-full flex-1 resize-none rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white placeholder:text-white/20 focus:border-primary/50 focus:bg-white/10 focus:outline-none transition-all duration-300"
+                className="w-full flex-1 resize-none rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-base text-white placeholder:text-white/20 focus:border-primary/50 focus:bg-white/10 focus:outline-none transition-all duration-300"
                 rows={2}
                 disabled={isLoading}
               />

@@ -410,7 +410,7 @@ export default function ChatInput() {
                 <select
                   value={preferredLanguage}
                   onChange={handleLanguageChange}
-                  className="rounded-md border text-black px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm focus:border-primary/50 focus:outline-none focus:ring-2 focus:ring-primary/20"
+                  className="rounded-md border text-black px-2 sm:px-3 py-1 sm:py-1.5 text-base focus:border-primary/50 focus:outline-none focus:ring-2 focus:ring-primary/20"
                 >
                   <option className="text-black" value="en">English</option>
                   <option className="text-black" value="ko">Korean</option>
@@ -427,7 +427,7 @@ export default function ChatInput() {
                 onKeyDown={handleKeyDown}
                 rows={1}
                 placeholder="Start typing..."
-                className="w-full resize-none rounded-2xl border border-white/10 bg-black/40 px-4 sm:px-6 py-4 text-sm sm:text-base leading-relaxed text-white caret-blue-400 placeholder:text-white/20 focus:border-blue-500/40 focus:bg-black/60 focus:outline-none transition-all duration-300 shadow-2xl backdrop-blur-md min-h-[56px] overflow-hidden"
+                className="w-full resize-none rounded-2xl border border-white/10 bg-black/40 px-4 sm:px-6 py-4 text-base leading-relaxed text-white caret-blue-400 placeholder:text-white/20 focus:border-blue-500/40 focus:bg-black/60 focus:outline-none transition-all duration-300 shadow-2xl backdrop-blur-md min-h-[56px] overflow-hidden"
                 spellCheck={false}
               />
               <div className="absolute inset-0 rounded-2xl pointer-events-none border border-transparent group-focus-within/input:border-blue-500/20 transition-all duration-500" />
