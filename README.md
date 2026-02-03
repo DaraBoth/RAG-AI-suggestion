@@ -1,12 +1,13 @@
 # ✨ TypeFlow AI - Intelligent Autocomplete with RAG & Magic UI
 
-> **Version 1.0.0** | *Last Updated: January 29, 2026*
+> **Version 1.0.0** | *Last Updated: February 3, 2026*
 
 A cutting-edge Next.js application featuring AI-powered autocomplete with Retrieval Augmented Generation (RAG), interactive chat interface, real-time training analytics, and stunning Magic UI components. Train your AI with PDF and text files, chat with your trained data, and experience intelligent word completion and phrase suggestions powered by OpenAI embeddings and Supabase vector search.
 
 [![GitHub](https://img.shields.io/badge/GitHub-Repository-181717?style=flat-square&logo=github)](https://github.com/DaraBoth/fine-tune-AI-suggestion)
 [![Buy Me a Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-Support-FFDD00?style=flat-square&logo=buy-me-a-coffee&logoColor=black)](https://buymeacoffee.com/daraboth)
-![Next.js](https://img.shields.io/badge/Next.js-15.1.6-black?style=flat-square&logo=next.js)
+![Next.js](https://img.shields.io/badge/Next.js-16.1.6-black?style=flat-square&logo=next.js)
+![React](https://img.shields.io/badge/React-19.0.0-61dafb?style=flat-square&logo=react)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.7.2-blue?style=flat-square&logo=typescript)
 ![Supabase](https://img.shields.io/badge/Supabase-2.49.2-green?style=flat-square&logo=supabase)
 ![OpenAI](https://img.shields.io/badge/OpenAI-4.77.0-purple?style=flat-square&logo=openai)

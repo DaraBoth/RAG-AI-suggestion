@@ -5,7 +5,7 @@ import ChatInput from '@/components/ChatInput'
 import ChatInterface from '@/components/ChatInterface'
 import TrainingTab from '@/components/TrainingTab'
 import Image from 'next/image'
-import { MessageSquare, BookOpen, MessagesSquare, Github, Coffee, Heart, Sparkles as SparklesIcon } from 'lucide-react'
+import { MessageSquare, BookOpen, MessagesSquare, Github, Coffee, Heart, Sparkles as SparklesIcon, Info } from 'lucide-react'
 
 export default function MainInterface() {
   return (
@@ -37,6 +37,16 @@ export default function MainInterface() {
 
         {/* Quick Links */}
         <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+          <a
+            href="/intro"
+            className="group flex items-center gap-2 rounded-full border border-cyan-500/20 bg-cyan-500/10 px-5 py-2.5 backdrop-blur-xl transition-all hover:border-cyan-500/40 hover:bg-cyan-500/20 hover:scale-105"
+          >
+            <Info className="h-4 w-4 text-cyan-400 transition-colors group-hover:text-cyan-300" />
+            <span className="text-sm font-medium text-cyan-400 transition-colors group-hover:text-cyan-300">
+              Introduction
+            </span>
+          </a>
+
           <a
             href="/docs"
             className="group flex items-center gap-2 rounded-full border border-blue-500/20 bg-blue-500/10 px-5 py-2.5 backdrop-blur-xl transition-all hover:border-blue-500/40 hover:bg-blue-500/20 hover:scale-105"
