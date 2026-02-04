@@ -4,7 +4,7 @@ import { useState, useRef, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import { Send, Bot, User, Database, Sparkles, Loader2, Trash2 } from 'lucide-react'
+import { Send, Bot, User, Database, Sparkles, Loader2, Trash2, ArrowUp } from 'lucide-react'
 import { useAppStore } from '@/lib/store'
 import { sendChatMessage, type ChatMessage } from '@/services'
 import { BorderBeam } from '@/components/ui/border-beam'
@@ -327,15 +327,15 @@ export default function ChatInterface() {
             <ShimmerButton
               onClick={handleSend}
               disabled={!inputValue.trim() || isLoading}
-              className="h-[68px] sm:h-[72px] w-14 sm:w-16 rounded-xl flex items-center justify-center"
+              className="h-[68px] sm:h-[72px] w-14 sm:w-16 rounded-xl flex items-center justify-center p-0"
               shimmerSize="0.1em"
               shimmerColor="rgba(59, 130, 246, 0.4)"
               borderRadius="12px"
             >
               {isLoading ? (
-                <Loader2 className="h-5 w-5 animate-spin text-white" />
+                <Loader2 className="h-7 w-7 animate-spin text-white" />
               ) : (
-                <Send className="h-5 w-5 text-white" />
+                <ArrowUp className="h-7 w-7 text-white" />
               )}
             </ShimmerButton>
           </div>
